@@ -473,15 +473,15 @@
 
     <!-- Page Specific JS -->
     <script src="/assets/js/app.js"></script>
-	<script src="/assets/js/image_upload.js"></script>
+	<script src="/assets/js/image-upload.js"></script>
 	<script>
 		const myModal = new bootstrap.Modal('#addApp', {
 			keyboard: false
 		});
-		// myModal.show();
+		myModal.show();
 		// 文件上传
 		let file_input = FileInput();
-		file_input.Init('app_img', '#');
+		file_input.Init('app_img', '/app/upload_image');
 
 		$(function (){
 			// 缩略图弹出框

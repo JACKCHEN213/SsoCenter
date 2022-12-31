@@ -32,7 +32,7 @@ let FileInput = function () {
 
         //导入文件上传完成之后的事件
         $("#txt_file").on("fileuploaded", function (event, data, previewId, index) {
-
+            console.log(data)
             data = data.response;
             let last = data.lastIndexOf("Upload");
             EmImg = data.substring(last + 7);

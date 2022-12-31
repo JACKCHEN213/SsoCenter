@@ -30,3 +30,22 @@ function getAllRequestParams(): array
     $file_params = input('file.') ?: [];
     return array_merge($file_params, $post_params, $get_params);
 }
+
+function formatFileSize(int $file_size): string
+{
+    $file_size_unit = [
+        'B' => 1,
+        'KB' => 1024,
+        'MB' => 1024 * 1024,
+        'GB' => 1024 * 1024 * 1024,
+    ];
+    if ($file_size / $file_size_unit['GB'] > 0.5) {
+        return round($file_size / $file_size_unit['GB'], 2) . 'GB';
+    } elseif ($file_size / $file_size_unit['MB'] > 0.5) {
+        return round($file_size / $file_size_unit['MB'], 2) . 'MB';
+    } elseif ($file_size / $file_size_unit['KB'] > 0.5) {
+        return round($file_size / $file_size_unit['KB'], 2) . 'KB';
+    } else {
+        return round($file_size / $file_size_unit['B'], 2) . 'B';
+    }
+}
