@@ -22,3 +22,11 @@ function sendJson($code = 0, $message = 'Success', $result = []): Json
         'result' => $result,
     ]);
 }
+
+function getAllRequestParams(): array
+{
+    $get_params = input('get.') ?: [];
+    $post_params = input('post.') ?: [];
+    $file_params = input('file.') ?: [];
+    return array_merge($file_params, $post_params, $get_params);
+}
