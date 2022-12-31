@@ -1,4 +1,5 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
@@ -10,3 +11,14 @@
 // +----------------------------------------------------------------------
 
 // 应用公共文件
+
+use think\response\Json;
+
+function sendJson($code = 0, $message = 'Success', $result = []): Json
+{
+    return json([
+        'code' => $code,
+        'message' => $message,
+        'result' => $result,
+    ]);
+}

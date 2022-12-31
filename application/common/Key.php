@@ -2,7 +2,7 @@
 
 namespace app\common;
 
-use JWT;
+use extra\JWT;
 
 class Key
 {
@@ -23,5 +23,4 @@ class Key
         $token = JWT::encode($data, $private_key_pem, 'RS256');
         return ['token' => $token, 'pub' => $public_key_pem];
     }
-
 }
