@@ -3,5 +3,9 @@
 use think\facade\Route;
 
 Route::group('app', function () {
-    Route::rule('upload_image', 'uploadImage');
-})->method('post')->prefix('application/');
+    Route::post('add', 'add');
+    Route::delete('delete', 'delete');
+    Route::put('update', 'update');
+    Route::post('upload_image', 'uploadImage');
+    Route::delete('delete_uploaded_image', 'deleteUploadedImage');
+})->prefix('application/');

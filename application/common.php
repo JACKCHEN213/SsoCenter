@@ -12,10 +12,19 @@
 
 // 应用公共文件
 
+use app\common\ResponseCode;
+use app\common\ResponseMessage;
+use think\facade\Request;
 use think\response\Json;
 
-function sendJson($code = 0, $message = 'Success', $result = []): Json
+function sendJson($result = [], $code = null, $message = null): Json
 {
+    if (is_null($code)) {
+        $code = ResponseCode::$OK;
+    }
+    if (is_null($message)) {
+        $message = ResponseMessage::$OK;
+    }
     return json([
         'code' => $code,
         'message' => $message,
@@ -48,4 +57,17 @@ function formatFileSize(int $file_size): string
     } else {
         return round($file_size / $file_size_unit['B'], 2) . 'B';
     }
+}
+
+function acceptFile(string $filename): \think\File
+{
+    return Request::file($filename);
+}
+
+function recordLog($message, $level = 'info')
+{
+    if (is_subclass_of($message, Throwable::class)) {
+        $message = "[{$message->getFile()}]\n[{$message->getLine()}] {$message->getMessage()}";
+    }
+    trace($message, $level);
 }

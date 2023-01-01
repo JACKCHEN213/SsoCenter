@@ -13,14 +13,13 @@ class Index extends Controller
             ->field(['id', 'username', 'password'])
             ->find(1);
         $apps = Db::name('site')
-            ->field(['name', 'image', 'request_url', 'redirect_url', 'is_use', 'public_key', 'app_path',])
+            ->field(['name', 'image', 'request_url', 'redirect_url', 'is_use', 'public_key', 'app_path', 'id',])
             ->where('is_del', 0)
             ->select();
         return $this->assign([
             'user' => $admin,
             'apps' => $apps,
-        ])
-            ->fetch();
+        ])->fetch();
     }
 
     public function settings()

@@ -4,3 +4,4 @@
 *.log
 thinkphp
 .DS_Store
+runtime

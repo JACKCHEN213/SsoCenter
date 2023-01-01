@@ -24,6 +24,6 @@ class ValidateParams
         if (is_array($error) && $error) {
             $error = implode("; ", $error);
         }
-        return sendJson(ResponseCode::$VALIDATE_ERROR, ResponseMessage::$VALIDATE_ERROR, $error);
+        return sendJson($error, ResponseCode::$VALIDATE_ERROR, ResponseMessage::$VALIDATE_ERROR);
     }
 }

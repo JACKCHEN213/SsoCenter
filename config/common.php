@@ -2,7 +2,7 @@
 
 return [
     'VALIDATE_NAMESPACE' => 'app\\validate\\',
-    'APP_IMAGE_PREFIX' => 'static/app/img',
+    'APP_IMAGE_PREFIX' => 'static/app/img/',
     'IMAGE_EXT' => [
         'png',
         'jpg',
