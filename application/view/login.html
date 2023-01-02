@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <title>登录 - 服务注册中心</title>
 
@@ -9,11 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="description" content="Portal - Bootstrap 5 Admin Dashboard Template For Developers">
-    <meta name="author" content="Xiaoying Riley at 3rd Wave Media">
     <link rel="shortcut icon" href="/assets/favicon.ico">
     <link rel="stylesheet" href="/assets/plugins/bootstrap/font/bootstrap-icons.css">
     <link id="theme-style" rel="stylesheet" href="/assets/css/portal.css">
-
+    <script src="/assets/js/jquery.min.js"></script>
 </head>
 
 <body class="app app-login p-0">
@@ -28,20 +27,30 @@
 				</div>
                 <h2 class="auth-heading text-center mb-5">登录到服务注册中心</h2>
                 <div class="auth-form-container text-start">
-                    <form class="auth-form login-form">
-                        <div class="email mb-3">
-                            <label class="sr-only" for="signin-email">用户名</label>
-                            <input id="signin-email" name="signin-email" type="text" class="form-control signin-email"
-                                   placeholder="请输入用户名" required="required">
+                    <form class="auth-form login-form" onsubmit="login(event, this)">
+                        <div class="username mb-3">
+                            <label class="sr-only" for="username">用户名</label>
+                            <input id="username"
+                                   name="username"
+                                   type="text"
+                                   class="form-control signin-username"
+                                   placeholder="请输入用户名"
+                                   autocomplete="off"
+                                   required="required">
                         </div>
                         <div class="password mb-3">
-                            <label class="sr-only" for="signin-password">密码</label>
-                            <input id="signin-password" name="signin-password" type="password"
-                                   class="form-control signin-password" placeholder="请输入密码" required="required">
+                            <label class="sr-only" for="password">密码</label>
+                            <input id="password"
+                                   name="password"
+                                   type="password"
+                                   class="form-control signin-password"
+                                   autocomplete="off"
+                                   placeholder="请输入密码"
+                                   required="required">
                             <div class="extra mt-3 row justify-content-between">
                                 <div class="col-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="RememberPassword">
+                                        <input class="form-check-input" name="remember" type="checkbox" id="RememberPassword">
                                         <label class="form-check-label" for="RememberPassword">
                                             记住密码
                                         </label>
@@ -56,7 +65,9 @@
                             </div><!--//extra-->
                         </div><!--//form-group-->
                         <div class="text-center">
-                            <button type="submit" class="btn app-btn-primary w-100 theme-btn mx-auto">登录</button>
+                            <button type="submit"
+                                    class="btn btn-primary w-100 theme-btn mx-auto"
+                                    style="color: #fff;">登录</button>
                         </div>
                     </form>
 
@@ -90,10 +101,8 @@
             <div class="d-flex flex-column align-content-end h-100">
                 <div class="h-100"></div>
                 <div class="overlay-content p-3 p-lg-4 rounded">
-                    <h5 class="mb-3 overlay-title">Explore Portal Admin Template</h5>
-                    <div>Portal is a free Bootstrap 5 admin dashboard template. You can download and view the template
-                        license <a href="http://www.mobanwang.com/">here</a>.
-                    </div>
+                    <h5 class="mb-3 overlay-title" id="recommend_title">罗隐 - 《自遣》</h5>
+                    <div id="recommend_content">得即高歌失即休，多愁多恨亦悠悠。<br />今朝有酒今朝醉，明日愁来明日愁。</div>
                 </div>
             </div>
         </div><!--//auth-background-overlay-->
@@ -101,7 +110,40 @@
 
 </div><!--//row-->
 
+<script>
+    function initRecommend() {
+        $.ajax({
+            type: "GET",
+            url: "https://v1.hitokoto.cn/",
+            success: function (data) {
+                if (data['from_who'] !== undefined && data['from'] !== undefined && data['hitokoto'] !== undefined) {
+                    $('#recommend_title').html((data['from_who'] === null ? '' : data['from_who'] + ' - ') + "《" + data['from'] + "》");
+                    $('#recommend_content').html(data['hitokoto']);
+                }
+            },
+            error: (error) => {
+                console.error(error);
+            }
+        })
+    }
 
+    function login(event, form) {
+        event.preventDefault();
+        let form_data = new FormData(event.target);
+        let login_info = {
+            username: form_data.get('username'),
+            password: form_data.get('password'),
+            remember: form_data.get('remember'),
+        }
+        console.log(login_info);
+    }
+
+    function init() {
+        initRecommend();
+    }
+
+    init();
+</script>
 </body>
 </html> 
 
