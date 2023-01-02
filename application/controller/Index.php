@@ -19,16 +19,16 @@ class Index extends Controller
         return $this->assign([
             'user' => $admin,
             'apps' => $apps,
-        ])->fetch();
+        ])->fetch('/index');
     }
 
     public function settings()
     {
-        return $this->fetch();
+        return $this->fetch('/settings');
     }
 
     public function account()
     {
-        return $this->fetch();
+        return $this->fetch('/account');
     }
 }

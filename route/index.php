@@ -2,7 +2,8 @@
 
 use think\facade\Route;
 
-Route::group(['method' => 'get'], function () {
-    Route::rule('/', 'index/index')->append(['url' => '/']);
-    Route::rule('/:url', 'index/:url');
-});
+Route::group('/', function () {
+    Route::get('/', 'index');
+    Route::get('/settings', 'settings');
+    Route::get('/account', 'account');
+})->prefix('index/');
