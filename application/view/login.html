@@ -13,6 +13,23 @@
     <link rel="stylesheet" href="/assets/plugins/bootstrap/font/bootstrap-icons.css">
     <link id="theme-style" rel="stylesheet" href="/assets/css/portal.css">
     <script src="/assets/js/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+    <script src="/assets/js/ex.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        #eye {
+            position: relative;
+        }
+        #eye-on, #eye-off {
+            position: absolute;
+            display: flex;
+            right: 10px;
+            top: -27px;
+        }
+    </style>
 </head>
 
 <body class="app app-login p-0">
@@ -27,7 +44,7 @@
 				</div>
                 <h2 class="auth-heading text-center mb-5">登录到服务注册中心</h2>
                 <div class="auth-form-container text-start">
-                    <form class="auth-form login-form" onsubmit="login(event, this)">
+                    <form class="auth-form login-form" onsubmit="login(event)">
                         <div class="username mb-3">
                             <label class="sr-only" for="username">用户名</label>
                             <input id="username"
@@ -47,6 +64,9 @@
                                    autocomplete="off"
                                    placeholder="请输入密码"
                                    required="required">
+                            <div style="position: relative" id="eye">
+                                <i class="bi bi-eye-slash" id="eye-off" onclick="eyeOffClick()"></i>
+                            </div>
                             <div class="extra mt-3 row justify-content-between">
                                 <div class="col-6">
                                     <div class="form-check">
@@ -127,19 +147,68 @@
         })
     }
 
-    function login(event, form) {
+    function initInput() {
+        let login_remember = window.localStorage.getItem('login_remember');
+        if (!login_remember) {
+            return;
+        }
+        login_remember = JSON.parse(login_remember);
+        if (login_remember.username !== undefined) {
+            $('#username').val(login_remember.username);
+            $('#password').val(login_remember.password);
+            $('#RememberPassword').attr('checked', true);
+        }
+    }
+
+    function eyeOnClick() {
+        $('#eye').html('<i class="bi bi-eye-slash" id="eye-off" onclick="eyeOffClick()"></i>');
+        let password = $('#password');
+        let val = password.val();
+        password.val('').attr('type', 'password').focus().val(val);
+    }
+
+    function eyeOffClick() {
+        $('#eye').html('<i class="bi bi-eye" id="eye-on" onclick="eyeOnClick()"></i>');
+        let password = $('#password');
+        let val = password.val();
+        password.val('').attr('type', 'text').focus().val(val);
+    }
+
+    function login(event) {
         event.preventDefault();
         let form_data = new FormData(event.target);
-        let login_info = {
-            username: form_data.get('username'),
-            password: form_data.get('password'),
-            remember: form_data.get('remember'),
-        }
-        console.log(login_info);
+        $.ajax({
+            type: 'POST',
+            url: 'login/login',
+            contentType: 'application/json;charset=utf8',
+            data: JSON.stringify({username: form_data.get('username'), password: md5(form_data.get('password'))}),
+            success: (data) => {
+                if (data.code === 0) {
+                    if (form_data.get('remember')) {
+                        // 保存到localstorage
+                        window.localStorage.setItem('login_remember', JSON.stringify({
+                            username: form_data.get('username'),
+                            password: form_data.get('password')
+                        }));
+                    }
+                    window.localStorage.setItem('token', data.result);
+                    messageEx('登录成功', 'success', 500);
+                    setTimeout(function () {
+                        window.location.href = '/';
+                    }, 500);
+                } else {
+                    messageEx(data.result, 'error');
+                }
+            },
+            error: (error) => {
+                console.error(error);
+            }
+        });
     }
 
     function init() {
         initRecommend();
+        initInput();
     }
 
     init();

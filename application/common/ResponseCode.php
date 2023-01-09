@@ -11,4 +11,6 @@ class ResponseCode
     public static int $FILE_UPLOAD_FAILED = 10002;
     public static int $DB_ERROR = 10003;
     public static int $DATA_ALREADY_EXIST = 10004;
+    public static int $USER_NOT_FOUND = 10005;
+    public static int $WRONG_PASSWORD = 10006;
 }

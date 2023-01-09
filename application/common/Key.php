@@ -2,25 +2,25 @@
 
 namespace app\common;
 
-use extra\JWT;
-
 class Key
 {
     /**
-     * @param $data
-     * @return array
+     * @param string $filename
+     * @return string
      */
-    public function setToken($data): array
+    public static function setPrivateKey(string $filename): string
     {
-        $new_key_pair = openssl_pkey_new(array(
-            "private_key_bits" => 2048,
-            "private_key_type" => OPENSSL_KEYTYPE_RSA,
-        ));
-        openssl_pkey_export($new_key_pair, $private_key_pem);
+        $new_key_pair = openssl_pkey_new(config('common.PRIVATE_KEY_OPTIONS'));
+        openssl_pkey_export($new_key_pair, $private_key);
 
+        $save_dir = config('common.JWT_KEY_PATH');
+        if (!is_dir($save_dir)) {
+            mkdir($save_dir, 0777, true);
+        }
         $details = openssl_pkey_get_details($new_key_pair);
         $public_key_pem = $details['key'];
-        $token = JWT::encode($data, $private_key_pem, 'RS256');
-        return ['token' => $token, 'pub' => $public_key_pem];
+        file_put_contents($save_dir . DIRECTORY_SEPARATOR . $filename, $private_key);
+        file_put_contents($save_dir . DIRECTORY_SEPARATOR . $filename . '.pem', $public_key_pem);
+        return $private_key;
     }
 }
