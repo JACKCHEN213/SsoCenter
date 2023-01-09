@@ -3,9 +3,10 @@ let FileInput = function () {
     this.is_uploaded = false;
     this.control = $();
     this.image_show = $();
+    this.token = null;
 };
 
-FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, showName, app=null) {
+FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, showName, app=null, token=null) {
     self = this;
     //初始化fileinput控件（第一次初始化）
     this.control = $('#' + ctrlName);
@@ -20,6 +21,7 @@ FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, sho
             this.is_uploaded = true;
         }
     }
+    this.token = token;
 
     //初始化上传控件的样式
     self.control.fileinput({
@@ -110,11 +112,16 @@ FileInput.prototype.deleteUploadedImage = function (event, deleteUploadedUrl, ca
             if (!result) {
                 return;
             }
+            let headers = {};
+            if (this.token) {
+                headers.Authorization = this.token;
+            }
             this.control.fileinput('refresh');
             $.ajax({
                 type: 'DELETE',
                 contentType: 'application/json;charset=UTF-8',
                 url: deleteUploadedUrl,
+                headers,
                 data: JSON.stringify({image_url: this.image_show.attr('value')}),
                 success: (data) => {
                     if (data.code !== 0) {

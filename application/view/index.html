@@ -560,6 +560,14 @@
 </body>
 <script>
 	let modals = {};
+	let token = '';
+	function checkToken() {
+		token = window.localStorage.getItem('token');
+		if (!token) {
+			messageEx('登录失效', 'error', 500);
+			window.location.href = 'login.html';
+		}
+	}
 	function clickSubmit(id) {
 		$(id).click();
 	}
@@ -574,7 +582,7 @@
 		// $('#' + modal_id).show();
 		// 文件上传
 		let file_input = new FileInput();
-		file_input.Init(img_id, '/app/upload_image', '/app/delete_uploaded_image', img_url_id, app);
+		file_input.Init(img_id, '/app/upload_image', '/app/delete_uploaded_image', img_url_id, app, token);
 	}
 
 	/**
@@ -598,6 +606,9 @@
 		$.ajax({
 			type: method,
 			contentType: 'application/json;charset=UTF-8',
+			headers: {
+				Authorization: token,
+			},
 			url: form.attr('action'),
 			data: JSON.stringify(send_data),
 			success: (data) => {
@@ -628,6 +639,9 @@
 				$.ajax({
 					type: 'DELETE',
 					contentType: 'application/json;charset=UTF-8',
+					headers: {
+						Authorization: token,
+					},
 					url: 'app/delete',
 					data: JSON.stringify({id: app_id}),
 					success: (data) => {
@@ -649,6 +663,7 @@
 	}
 
 	function init() {
+		checkToken();
 		$(function () {
 			// 缩略图弹出框
 			for (let i = 0; i < parseInt('{$apps|count}'); i++) {

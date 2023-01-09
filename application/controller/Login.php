@@ -19,8 +19,8 @@ class Login extends Controller
 
     private function getToken(array $jwt_data): string
     {
-        $private_key = Key::setPrivateKey(config('common.JWT_KEY_NAME') . '.key');
-        return JWT::encode($jwt_data, $private_key);
+        $private_key = Key::getPrivateKey(config('common.JWT_KEY_NAME'));
+        return JWT::encode($jwt_data, $private_key, 'RS256');
     }
 
     final public function login(): Json
@@ -48,7 +48,7 @@ class Login extends Controller
                 'username' => $username,
                 'id' => $user['id'],
             ]);
-            return sendJson('Bearer ' . $token);
+            return sendJson($token);
         } catch (\Exception $e) {
             recordLog($e, 'error');
             return sendJson($e->getMessage(), ResponseCode::$UNKNOWN_ERROR, ResponseMessage::$UNKNOWN_ERROR);
