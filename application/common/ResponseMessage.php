@@ -13,4 +13,5 @@ class ResponseMessage
     public static string $DATA_ALREADY_EXIST = "数据已经存在了";
     public static string $USER_NOT_FOUND = "用户找不到";
     public static string $WRONG_PASSWORD = "密码错误";
+    public static string $JWT_ERROR = "身份验证错误";
 }

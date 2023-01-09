@@ -18,4 +18,14 @@ return [
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
     ],
     'JWT_KEY_NAME' => 'jwt',
+    'LOGON_FREE' => [
+        // 不需要登录的控制器，全小写，支持所有请求方法
+        'controller' => [
+            'login'
+        ],
+        // 不需要登录的路由，全小写
+        'route' => [
+            'test' => ['get', 'post'],
+        ],
+    ]
 ];
