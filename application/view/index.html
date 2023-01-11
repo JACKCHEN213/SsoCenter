@@ -459,7 +459,8 @@
 									<a type="button"
 
 									   class="btn btn-primary"
-									   href="{$app['request_url']}?redirect_url={$app['redirect_url']}"
+									   onclick="visitApp(`{$app['request_url']}`, `{$app['redirect_url'] | base64_encode}`)"
+									   href="#"
 									   target="_blank">访问应用</a>
 								</div>
 								<div style="margin: 0 10px;">
@@ -507,7 +508,9 @@
 									<button type="button" class="btn btn-danger" onclick="deleteApp(`{$app['id']}`, `{$app['name']}`)">删除</button>
 								</div>
 								<div style="margin: 0 0 0 10px;">
-									<button type="button" class="btn btn-warning">
+									<button type="button"
+											class="btn btn-warning"
+											onclick="downloadPublicToken(`{$app['public_key'] | base64_encode}`)">
 										下载公钥
 										<i class="bi bi-question-circle public_key_question"
 										   style="position: relative; top: 0;"
@@ -561,6 +564,12 @@
 <script>
 	let modals = {};
 	let token = '';
+	function downloadPublicToken(filename) {
+		window.open('app/download?_f=' + filename, 'blank')
+	}
+	function visitApp(request_url, redirect_url) {
+		window.open(request_url + '?redirect_url=' + redirect_url + '&token=' + token)
+	}
 	function checkToken() {
 		token = window.localStorage.getItem('token');
 		if (!token) {

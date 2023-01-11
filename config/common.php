@@ -26,6 +26,8 @@ return [
         // 不需要登录的路由，全小写
         'route' => [
             'test' => ['get', 'post'],
+            'application/uploadimage' => ['post'],
         ],
-    ]
+    ],
+    'APP_KEY_PATH' => 'static/app/keys/',
 ];

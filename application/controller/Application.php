@@ -2,6 +2,7 @@
 
 namespace app\controller;
 
+use app\common\Key;
 use app\common\ResponseCode;
 use app\common\ResponseMessage;
 use Exception;
@@ -11,7 +12,7 @@ use think\response\Json;
 
 class Application extends Controller
 {
-    public function add(): Json
+    final public function add(): Json
     {
         $add_data = [
             'name' => input('post.app_name'),
@@ -31,6 +32,16 @@ class Application extends Controller
             }
             Db::startTrans();
             $site_id = Db::name('site')->insertGetId($add_data);
+            // 生成秘钥
+            $filename = md5($site_id) . '.pem';
+            $public_key = Key::getPublicKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME'));
+            if (!is_dir(config('common.APP_KEY_PATH'))) {
+                mkdir(config('common.APP_KEY_PATH'), 0777, true);
+            }
+            file_put_contents(config('common.APP_KEY_PATH') . '/' . $filename, $public_key);
+            Db::name('site')->where('id', $site_id)->update([
+                'public_key' => $filename,
+            ]);
             Db::commit();
 
             return sendJson($site_id);
@@ -41,7 +52,7 @@ class Application extends Controller
         }
     }
 
-    public function uploadImage(): Json
+    final public function uploadImage(): Json
     {
         $image = acceptFile('file_data');
         $file = $image->move(config('common.APP_IMAGE_PREFIX'), 'app_image_' . time());
@@ -51,7 +62,7 @@ class Application extends Controller
         return sendJson(config('common.APP_IMAGE_PREFIX') . $file->getFilename());
     }
 
-    public function deleteUploadedImage(): Json
+    final public function deleteUploadedImage(): Json
     {
         $image_path = input('delete.image_url');
         if (is_file($image_path)) {
@@ -60,7 +71,7 @@ class Application extends Controller
         return sendJson('删除成功');
     }
 
-    public function update(): Json
+    final public function update(): Json
     {
         $id = input('put.id/d');
         $update_data = [
@@ -94,11 +105,16 @@ class Application extends Controller
         }
     }
 
-    public function delete(): Json
+    final public function delete(): Json
     {
         $id = input('delete.id/d');
         try {
             Db::startTrans();
+            $public_key_file = Db::name('site')->where('id', $id)->value('public_key');
+            $filepath = config('common.APP_KEY_PATH') . '/' . $public_key_file;
+            if (is_file($filepath)) {
+                unlink($filepath);
+            }
             Db::name('site')->where('id', $id)->setField(['is_del' => 1]);
             Db::commit();
 
@@ -108,5 +124,14 @@ class Application extends Controller
             recordLog($e, 'error');
             return sendJson($e->getMessage(), ResponseCode::$DB_ERROR, ResponseMessage::$DB_ERROR);
         }
+    }
+
+    final public function download()
+    {
+        $filepath = config('common.APP_KEY_PATH') . '/' . base64_decode(input('get._f/s'));
+        if (!is_file($filepath)) {
+            return redirect('/404');
+        }
+        return download($filepath, md5(time()));
     }
 }

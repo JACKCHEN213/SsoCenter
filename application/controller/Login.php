@@ -19,7 +19,7 @@ class Login extends Controller
 
     private function getToken(array $jwt_data): string
     {
-        $private_key = Key::getPrivateKey(config('common.JWT_KEY_NAME'));
+        $private_key = Key::getPrivateKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME'));
         return JWT::encode($jwt_data, $private_key, 'RS256');
     }
 

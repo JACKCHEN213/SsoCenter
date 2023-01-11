@@ -38,7 +38,7 @@ class CheckLogin
         try {
             JWT::decode(
                 $token,
-                Key::getPublicKey(config('common.JWT_KEY_NAME')),
+                Key::getPublicKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME')),
                 array_keys(JWT::$supported_algs)
             );
             return $next($request);

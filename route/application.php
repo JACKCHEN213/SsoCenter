@@ -8,4 +8,5 @@ Route::group('app', function () {
     Route::put('update', 'update');
     Route::post('upload_image', 'uploadImage');
     Route::delete('delete_uploaded_image', 'deleteUploadedImage');
+    Route::get('download', 'download');
 })->prefix('application/');
