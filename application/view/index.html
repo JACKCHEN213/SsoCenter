@@ -568,7 +568,7 @@
 		window.open('app/download?_f=' + filename, 'blank')
 	}
 	function visitApp(request_url, redirect_url) {
-		window.open(request_url + '?redirect_url=' + redirect_url + '&token=' + token)
+		window.open(request_url + '?redirect_url=' + redirect_url + '&sso_token=' + token)
 	}
 	function checkToken() {
 		token = window.localStorage.getItem('token');
