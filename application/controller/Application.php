@@ -12,6 +12,24 @@ use think\response\Json;
 
 class Application extends Controller
 {
+    private function generatePublicKey(int $site_id): void
+    {
+        $public_key_path = Db::name('site')->where('id', $site_id)->value('public_key');
+        if (is_file(config('common.APP_KEY_PATH') . '/' . $public_key_path)) {
+            return;
+        }
+        // 生成秘钥
+        $filename = md5($site_id) . '.pem';
+        $public_key = Key::getPublicKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME'));
+        if (!is_dir(config('common.APP_KEY_PATH'))) {
+            mkdir(config('common.APP_KEY_PATH'), 0777, true);
+        }
+        file_put_contents(config('common.APP_KEY_PATH') . '/' . $filename, $public_key);
+        Db::name('site')->where('id', $site_id)->update([
+            'public_key' => $filename,
+        ]);
+    }
+
     final public function add(): Json
     {
         $add_data = [
@@ -32,16 +50,7 @@ class Application extends Controller
             }
             Db::startTrans();
             $site_id = Db::name('site')->insertGetId($add_data);
-            // 生成秘钥
-            $filename = md5($site_id) . '.pem';
-            $public_key = Key::getPublicKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME'));
-            if (!is_dir(config('common.APP_KEY_PATH'))) {
-                mkdir(config('common.APP_KEY_PATH'), 0777, true);
-            }
-            file_put_contents(config('common.APP_KEY_PATH') . '/' . $filename, $public_key);
-            Db::name('site')->where('id', $site_id)->update([
-                'public_key' => $filename,
-            ]);
+            $this->generatePublicKey($site_id);
             Db::commit();
 
             return sendJson($site_id);
@@ -95,6 +104,7 @@ class Application extends Controller
             Db::name('site')
                 ->where('id', $id)
                 ->update($update_data);
+            $this->generatePublicKey($id);
             Db::commit();
 
             return sendJson('更新成功');
