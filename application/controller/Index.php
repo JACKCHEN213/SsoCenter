@@ -24,7 +24,7 @@ class Index extends Controller
 
     public function settings()
     {
-        return $this->fetch('/settings');
+        return $this->fetch('system_manage.settings');
     }
 
     public function account()
