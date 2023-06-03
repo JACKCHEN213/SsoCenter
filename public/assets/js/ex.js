@@ -2,30 +2,35 @@
  * 确认框
  * @param params
  */
-function confirmEx(params)
-{
-    // TODO: 创建元素
-    const modal = new bootstrap.Modal('#confirmEx', {
-        keyboard: false
-    });
+function confirmEx(params) {
+    const modalElemet = $(`
+    <div class="modal fade" id="confirmEx" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="addAppLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="confirmExHeader">${params.title !== undefined ? params.title : '确认框'}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmExBody">
+                ${params.message !== undefined && params.message}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="confirmExCancel" data-bs-dismiss="modal">${params.cancel !== undefined ? params.cancel : '取消'}</button>
+                    <button type="button" class="btn btn-primary" id="confirmExConfirm">${params.confirm !== undefined ? params.confirm : '确定'}确定</button>
+                </div>
+            </div>
+        </div>
+    </div>`);
+    $('body').append(modalElemet);
+    modalElemet.modal('show');
 
-    modal.show();
-    const confirm_ex_header = $("#confirmExHeader");
-    const confirm_ex_body = $("#confirmExBody");
-    const confirm_ex_cancel = $("#confirmExCancel");
-    const confirm_ex_confirm = $("#confirmExConfirm");
-
-    params.title !== undefined && confirm_ex_header.html(params.title);
-    params.message !== undefined && confirm_ex_body.html(params.message);
-    params.cancel !== undefined && confirm_ex_cancel.html(params.cancel);
-    params.confirm !== undefined && confirm_ex_confirm.html(params.confirm);
-
-    confirm_ex_cancel.click(() => {
-        modal.hide();
+    $("#confirmExCancel").click(() => {
+        modalElemet.modal('hide').remove();
         params.callback !== undefined && params.callback(false);
     });
-    confirm_ex_confirm.click(() => {
-        modal.hide();
+    $("#confirmExConfirm").click(() => {
+        modalElemet.modal('hide').remove();
         params.callback !== undefined && params.callback(true);
     });
 }
@@ -36,9 +41,8 @@ function confirmEx(params)
  * @param type 消息框类型（参考bootstrap的alert）
  * @return object
  */
-function alertEx(msg, type = 'success')
-{
-    if (typeof(msg) !== 'string') {
+function alertEx(msg, type = 'success') {
+    if (typeof (msg) !== 'string') {
         msg = JSON.stringify(msg);
     }
     // 创建bootstrap的alert元素
@@ -53,6 +57,7 @@ function alertEx(msg, type = 'success')
         "position": "fixed",
         "top": "80px",
         "right": "20px",
+        "z-index": "2000"
     });
     // 设置图标
     if (type === 'danger') {
@@ -75,8 +80,10 @@ function alertEx(msg, type = 'success')
  * @param type 消息框类型
  * @param timeout
  */
-function messageEx(msg, type = 'success', timeout = 1000)
-{
+function messageEx(msg, type = 'success', timeout = 1000) {
+    if (type == 'error') {
+        type = 'danger';
+    }
     const divElement = alertEx(msg, type); // 生成Alert消息框
     let isIn = false; // 鼠标是否在消息框中
 
@@ -100,7 +107,7 @@ function messageEx(msg, type = 'success', timeout = 1000)
         let upFloat = setInterval(function () {
             // 开始上浮
             if (nowTop >= stopTop) { // 判断当前消息框top是否还在可上升的范围内
-                divElement.offset({"top": nowTop--}); // 消息框的top上升1px
+                divElement.offset({ "top": nowTop-- }); // 消息框的top上升1px
             } else {
                 clearInterval(upFloat); // 关闭上浮
                 divElement.remove();    // 移除元素
@@ -121,7 +128,7 @@ function messageEx(msg, type = 'success', timeout = 1000)
             upFloat = setInterval(function () {
                 // 继续上浮
                 if (nowTop >= stopTop) {
-                    divElement.offset({"top": nowTop--});
+                    divElement.offset({ "top": nowTop-- });
                 } else {
                     clearInterval(upFloat); // 关闭上浮
                     divElement.remove();    // 移除元素

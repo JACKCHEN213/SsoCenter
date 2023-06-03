@@ -14,6 +14,8 @@
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/plugins/popper.min.js"></script>
     <script src="/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Base64/1.2.0/base64.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
     <script src="/assets/js/ex.js"></script>
 
     <style>
@@ -35,6 +37,18 @@
             display: none;
             width: 0;
             height: 0;
+        }
+
+        .required {
+            color: red;
+        }
+
+        .disabled {
+            cursor: not-allowed;
+        }
+
+        .pointer {
+            cursor: pointer;
         }
     </style>
     {block name="head"}{/block}
@@ -161,18 +175,18 @@
 
                             </div><!--//dropdown-menu-->
                         </div><!--//app-utility-item-->
-<!--                        <div class="app-utility-item">-->
-<!--                            <a href="/system_manage/settings.html" title="Settings">-->
-<!--                                &lt;!&ndash;//Bootstrap Icons: https://icons.getbootstrap.com/ &ndash;&gt;-->
-<!--                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-gear icon"-->
-<!--                                     fill="currentColor" xmlns="http://www.w3.org/2000/svg">-->
-<!--                                    <path fill-rule="evenodd"-->
-<!--                                          d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 0 1 4.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 0 1-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 0 1 1.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 0 1 2.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 0 1 2.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 0 1 1.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 0 1-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 0 1 8.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 0 0 1.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 0 0 .52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 0 0-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 0 0-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 0 0-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 0 0-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 0 0 .52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 0 0 1.255-.52l.094-.319z"/>-->
-<!--                                    <path fill-rule="evenodd"-->
-<!--                                          d="M8 5.754a2.246 2.246 0 1 0 0 4.492 2.246 2.246 0 0 0 0-4.492zM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0z"/>-->
-<!--                                </svg>-->
-<!--                            </a>-->
-<!--                        </div>&lt;!&ndash;//app-utility-item&ndash;&gt;-->
+                        <!--                        <div class="app-utility-item">-->
+                        <!--                            <a href="/system_manage/settings.html" title="Settings">-->
+                        <!--                                &lt;!&ndash;//Bootstrap Icons: https://icons.getbootstrap.com/ &ndash;&gt;-->
+                        <!--                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-gear icon"-->
+                        <!--                                     fill="currentColor" xmlns="http://www.w3.org/2000/svg">-->
+                        <!--                                    <path fill-rule="evenodd"-->
+                        <!--                                          d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 0 1 4.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 0 1-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 0 1 1.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 0 1 2.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 0 1 2.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 0 1 1.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 0 1-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 0 1 8.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 0 0 1.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 0 0 .52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 0 0-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 0 0-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 0 0-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 0 0-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 0 0 .52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 0 0 1.255-.52l.094-.319z"/>-->
+                        <!--                                    <path fill-rule="evenodd"-->
+                        <!--                                          d="M8 5.754a2.246 2.246 0 1 0 0 4.492 2.246 2.246 0 0 0 0-4.492zM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0z"/>-->
+                        <!--                                </svg>-->
+                        <!--                            </a>-->
+                        <!--                        </div>&lt;!&ndash;//app-utility-item&ndash;&gt;-->
 
                         <div class="app-utility-item app-user-dropdown dropdown">
                             <a class="dropdown-toggle" id="user-dropdown-toggle" data-bs-toggle="dropdown" href="#"
@@ -184,7 +198,10 @@
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item" href="login.html">登出</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="{
+                                    window.localStorage.removeItem('token');
+                                    window.location.href = '/login';
+                                }">登出</a></li>
                             </ul>
                         </div><!--//app-user-dropdown-->
                     </div><!--//app-utilities-->
@@ -275,9 +292,12 @@
                         </a><!--//nav-link-->
                         <div id="system-manage" class="collapse submenu system-manage" data-bs-parent="#menu-accordion">
                             <ul class="submenu-list list-unstyled">
-                                <li class="submenu-item"><a id="nav-notifications" class="submenu-link" href="/system_manage/notifications.html">消息通知</a></li>
-                                <li class="submenu-item"><a id="nav-account" class="submenu-link" href="/system_manage/account.html">账户</a></li>
-                                <li class="submenu-item"><a id="nav-settings" class="submenu-link" href="/system_manage/settings.html">设置</a></li>
+                                <li class="submenu-item"><a id="nav-notifications" class="submenu-link"
+                                                            href="/system_manage/notifications.html">消息通知</a></li>
+                                <li class="submenu-item"><a id="nav-account" class="submenu-link"
+                                                            href="/system_manage/account.html">账户</a></li>
+                                <li class="submenu-item"><a id="nav-settings" class="submenu-link"
+                                                            href="/system_manage/settings.html">设置</a></li>
                             </ul>
                         </div>
                     </li><!--//nav-item-->
@@ -304,10 +324,14 @@
                         </a><!--//nav-link-->
                         <div id="page-manage" class="collapse submenu page-manage" data-bs-parent="#menu-accordion">
                             <ul class="submenu-list list-unstyled">
-                                <li class="submenu-item"><a id="nav-login" class="submenu-link" href="/login.html">登录</a></li>
-                                <li class="submenu-item"><a id="nav-signup" class="submenu-link" href="/signup.html">注册</a></li>
-                                <li class="submenu-item"><a id="nav-reset-password" class="submenu-link" href="/reset_password.html">忘记密码</a></li>
-                                <li class="submenu-item"><a id="nav-404" class="submenu-link" href="/404.html">404页面</a></li>
+                                <li class="submenu-item"><a id="nav-login" class="submenu-link"
+                                                            href="/login.html">登录</a></li>
+                                <li class="submenu-item"><a id="nav-signup" class="submenu-link"
+                                                            href="/signup.html">注册</a></li>
+                                <li class="submenu-item"><a id="nav-reset-password" class="submenu-link"
+                                                            href="/reset_password.html">忘记密码</a></li>
+                                <li class="submenu-item"><a id="nav-404" class="submenu-link" href="/404.html">404页面</a>
+                                </li>
                             </ul>
                         </div>
                     </li><!--//nav-item-->
@@ -386,31 +410,12 @@
     <div class="app-content pt-3 p-md-3 p-lg-4">
         {block name="content"}{/block}
     </div>
-    <!--全局确认框-->
-    <div class="modal fade" id="confirmEx" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-         aria-labelledby="addAppLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="confirmExHeader">确认框</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="confirmExBody">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="confirmExCancel" data-bs-dismiss="modal">取消
-                    </button>
-                    <button type="button" class="btn btn-primary" id="confirmExConfirm">确定</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <footer class="app-footer">
         <div class="container text-center py-3">
             <small class="copyright">
                 <span>Reversed by</span>
-                <a href="https://github.com/JACKCHEN213" target="_blank">JackC</a>
+                <a href="#" target="_blank">xxx</a>
                 <span>&copy; 2023</span>
             </small>
         </div>
@@ -418,20 +423,63 @@
 </div>
 <script src="/assets/js/app.js"></script>
 <script>
+    function getToken() {
+        try {
+            return atob(window.localStorage.getItem('token'));
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function checkLogin(callback) {
+        let token = getToken();
+        if (!token) {
+            LoginOut();
+        }
+        $.ajax({
+            url: 'login/verify',
+            type: 'POST',
+            contentType: 'application/json;charset=utf8',
+            data: JSON.stringify({token}),
+            success: (data) => {
+                if (data.success) {
+                    // messageEx('登录成功', 'success', 500);
+                } else {
+                    LoginOut();
+                }
+            },
+            error: (error) => {
+                console.error(error);
+                // LoginOut();
+            }
+        });
+    }
+
+    function LoginOut() {
+        window.localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
+
     function clearNav() {
-        $('.nav-link').removeClass('active');
+        $('#app-nav-main .nav-link').removeClass('active');
         $('.submenu-item').removeClass('active');
         $('.submenu').removeClass('show');
     }
-    
-    function activeNav(id='#nav-index') {
+
+    function activeNav(id = '#nav-index') {
         $(id).addClass('active');
     }
-    
+
     function showCollapse(id) {
         $(id).addClass('show');
     }
-    clearNav();
+
+    function init() {
+        clearNav();
+        checkLogin();
+    }
+
+    init();
 </script>
 {block name="script"}{/block}
 </body>

@@ -1,7 +1,6 @@
 {extend name="template/login" /}
 {block name="title"}登录{/block}
 {block name="head"}
-<script src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 <style>
     #eye {
         position: relative;
@@ -75,7 +74,6 @@
     <div class="auth-option text-center pt-5">
         <span>没有账户？注册</span>
         <a class="text-link" href="signup.html">这里</a>
-        <span>.</span>
     </div>
 </div><!--//auth-form-container-->
 {/block}
@@ -126,7 +124,7 @@
                             password: form_data.get('password')
                         }));
                     }
-                    window.localStorage.setItem('token', data.result);
+                    window.localStorage.setItem('token', btoa(data.result));
                     messageEx('登录成功', 'success', 500);
                     setTimeout(function () {
                         window.location.href = '/';

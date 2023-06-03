@@ -14,4 +14,7 @@ class ResponseMessage
     public static string $USER_NOT_FOUND = "用户找不到";
     public static string $WRONG_PASSWORD = "密码错误";
     public static string $JWT_ERROR = "身份验证错误";
+    public static string $USER_EXISTS = "用户已经存在了";
+    public static string $ADD_USER_SUCCESS = "用户添加成功";
+    public static string $JWT_SUCCESS = "身份验证成功";
 }

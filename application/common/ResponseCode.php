@@ -14,4 +14,7 @@ class ResponseCode
     public static int $USER_NOT_FOUND = 10005;
     public static int $WRONG_PASSWORD = 10006;
     public static int $JWT_ERROR = 10007;
+    public static int $USER_EXISTS = 10008;
+    public static int $ADD_USER_SUCCESS = 10009;
+    public static int $JWT_SUCCESS = 10010;
 }

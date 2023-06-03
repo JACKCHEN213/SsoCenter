@@ -17,7 +17,7 @@ use app\common\ResponseMessage;
 use think\facade\Request;
 use think\response\Json;
 
-function sendJson($result = [], $code = null, $message = null): Json
+function sendJson($result = [], $code = null, $message = null, $success = true): Json
 {
     if (is_null($code)) {
         $code = ResponseCode::$OK;
@@ -27,6 +27,7 @@ function sendJson($result = [], $code = null, $message = null): Json
     }
     return json([
         'code' => $code,
+        'success' => $success,
         'message' => $message,
         'result' => $result,
     ]);
