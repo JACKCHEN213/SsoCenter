@@ -7,6 +7,7 @@ use app\common\ResponseMessage;
 use think\Controller;
 use think\Db;
 use think\db\Where;
+use think\facade\Request;
 
 class User extends Controller
 {
