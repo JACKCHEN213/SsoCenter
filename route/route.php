@@ -73,4 +73,5 @@ Route::group('user', function () {
     Route::post('/', 'add');
     Route::patch('/', 'update');
     Route::delete('/', 'delete');
+    Route::post('/batch', 'batchAdd');
 })->prefix('user/');

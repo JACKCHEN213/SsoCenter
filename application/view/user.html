@@ -298,7 +298,7 @@
         let send_data = new FormData();
         send_data.append('file', files);
         $.ajax({
-            url: 'api/User/user_file',
+            url: 'user/batch',
             type: 'POST',
             headers: {
                 Authorization: getToken(),
