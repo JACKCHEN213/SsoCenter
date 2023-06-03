@@ -184,7 +184,7 @@ class User extends Controller
 
         $result = [];
         foreach ($userInfo as $rowIndex => $user) {
-            $addRet = $this->doAdd($user['A'], $user['B'], md5($user['C']));
+            $addRet = $this->doAdd($user['A'], md5($user['C']), $user['B']);
             $result[] = "第{$rowIndex}行, " . $addRet->getData()['result'];
         }
         return sendJson($result, ResponseCode::$BATCH_ADD_SUCCESS, ResponseMessage::$BATCH_ADD_SUCCESS);
