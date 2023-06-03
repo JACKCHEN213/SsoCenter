@@ -42,7 +42,7 @@ class User extends Controller
     public function doAdd($username, $password, $email)
     {
         try {
-            $user = Db::name('user')->where('username', $username)->find();
+            $user = Db::name('user')->where('is_del', 0)->where('username', $username)->find();
             if ($user) {
                 return sendJson("用户已经存在了", ResponseCode::$USER_EXISTS, ResponseMessage::$USER_EXISTS, false);
             }
@@ -66,7 +66,7 @@ class User extends Controller
     public function doUpdate($user_id, $username, $email)
     {
         try {
-            if (!Db::name('user')->find($user_id)) {
+            if (!Db::name('user')->where('is_del', 0)->find($user_id)) {
                 return sendJson(
                     '用户不存在',
                     ResponseCode::$JWT_ERROR,
@@ -97,7 +97,7 @@ class User extends Controller
     public function doDelete($user_id)
     {
         try {
-            $user_data = Db::name('user')->find($user_id);
+            $user_data = Db::name('user')->where('is_del', 0)->find($user_id);
             if (!$user_data) {
                 return sendJson(
                     '用户不存在',
