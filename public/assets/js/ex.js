@@ -107,7 +107,7 @@ function messageEx(msg, type = 'success', timeout = 1000) {
         let upFloat = setInterval(function () {
             // 开始上浮
             if (nowTop >= stopTop) { // 判断当前消息框top是否还在可上升的范围内
-                divElement.offset({ "top": nowTop-- }); // 消息框的top上升1px
+                divElement.offset({"top": nowTop--}); // 消息框的top上升1px
             } else {
                 clearInterval(upFloat); // 关闭上浮
                 divElement.remove();    // 移除元素
@@ -128,7 +128,7 @@ function messageEx(msg, type = 'success', timeout = 1000) {
             upFloat = setInterval(function () {
                 // 继续上浮
                 if (nowTop >= stopTop) {
-                    divElement.offset({ "top": nowTop-- });
+                    divElement.offset({"top": nowTop--});
                 } else {
                     clearInterval(upFloat); // 关闭上浮
                     divElement.remove();    // 移除元素
