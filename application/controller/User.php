@@ -134,7 +134,7 @@ class User extends Controller
         $sheet = $reader->getActiveSheet();
         $rowIter = $sheet->getRowIterator();
         $readColumns = ['A', 'B', 'C'];
-        $columnDesc = ['A' => '用户名', 'B' => '密码', 'C' => '邮箱'];
+        $columnDesc = ['A' => '用户名', 'B' => '邮箱', 'C' => '密码'];
         $userInfo = [];
         $readError = [];
         foreach ($rowIter as $row) {
