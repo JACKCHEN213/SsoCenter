@@ -1,0 +1,378 @@
+{extend name="template/index" /}
+{block name="title"}用户管理{/block}
+{block name="head"}
+{/block}
+
+{block name="content"}
+<div class="container-xl">
+    <h1 class="app-page-title">用户管理</h1>
+
+    <table class="table table-striped table-bordered caption-top align-middle" style="word-break:break-all;">
+        <caption>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUser">添加用户</button>
+            <!-- Add User Modal -->
+            <div class="modal fade" id="addUser" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                 aria-labelledby="addUserLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="addUserLabel">添加用户</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="/user" id="addUserForm" method="post"
+                                  onsubmit="modifyUser(event, 'addUser', $(this))">
+                                <div class="mb-3">
+                                    <label for="username" class="col-form-label">
+                                        用户名称
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="text" autocomplete="off" required name="username" class="form-control"
+                                           id="username">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="col-form-label">
+                                        用户邮箱
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="email" autocomplete="off"
+                                           required name="email" class="form-control"
+                                           id="email">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="col-form-label">
+                                        用户密码
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="text" autocomplete="off" required name="password" class="form-control"
+                                           id="password">
+                                </div>
+                                <input type="submit" id="addUserSubmit" hidden/>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary"
+                                    onclick="clickSubmit('#addUserSubmit')">添加
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                    data-bs-target="#import-user">批量添加用户
+            </button>
+            <!-- Import User Modal -->
+            <div class="modal fade" id="import-user" tabindex="-1" aria-labelledby="importUserLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="importUserLabel">导入用户</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="import-user-form" onsubmit="importUser(event, 'import-user')">
+                                <div class="mb-3">
+                                    <label for="import-file" class="col-form-label">导入文件</label>
+                                    <input type="file" required name="import_file" class="form-control"
+                                           id="import-file">
+                                </div>
+                                <div class="mb-3">
+                                    <a href="static/template/用户导入模板.xlsx">下载导入模板</a>
+                                </div>
+                                <input type="submit" id="import-user-submit" hidden/>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消导入</button>
+                            <button type="button" class="btn btn-primary"
+                                    onclick="clickSubmit('#import-user-submit')">确定导入
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="username col-2" style="display: inline-block">
+                <label class="sr-only" for="search-name">用户名</label>
+                <input id="search-name" type="text" class="form-control signin-username" placeholder="请输入用户名"
+                       autocomplete="off">
+            </div>
+        </caption>
+        <thead>
+        <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 15%">用户名称</th>
+            <th style="width: 15%">邮箱地址</th>
+            <th style="width: 10%">用户状态</th>
+            <th style="width: 10%">用户身份</th>
+            <th style="width: 10%">上次登录IP</th>
+            <th style="width: 15%">上次登录时间</th>
+            <th style="width: 15%">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $users as $index => $user}
+        <tr>
+            <td>
+                {$index + 1}
+            </td>
+            <td>{$user['username']}</td>
+             <td>{$user['email']}</td>
+            <td>
+                {$user['status'] == 1 ? '正常' : '禁止登录'}
+            </td>
+            <td>{$user['type'] == 1 ? '管理员' : '普通用户'}</td>
+            <td>{$user['ip'] ?: '未登录'}</td>
+            <td>{$user['ip'] ? $user['update_time'] : '未登录'}</td>
+            <td>
+                <div style="display: flex; align-items: center">
+                    <div style="margin: 0 10px;">
+                        <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                data-bs-target="#editUser{$index}">编辑
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="editUser{$index}" data-bs-backdrop="static"
+                             data-bs-keyboard="false" tabindex="-1" aria-labelledby="editUserLabel{$index}"
+                             aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="editUserLabel{$index}">编辑用户</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="user" id="editUserForm{$index}" method="post"
+                                              onsubmit="modifyUser(event, 'editUser{$index}', $(this), 'PATCH', '{$user[\'id\']}')">
+                                            <div class="mb-3">
+                                                <label for="editUsername{$index}" class="col-form-label">
+                                                    用户名称
+                                                    <span class="required">*</span>
+                                                </label>
+                                                <input type="text" autocomplete="off"
+                                                       value="{$user['username']}" required
+                                                       name="username" class="form-control" id="editUsername{$index}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="editEmail{$index}" class="col-form-label">
+                                                    用户邮箱
+                                                    <span class="required">*</span>
+                                                </label>
+                                                <input type="email" autocomplete="off" value="{$user['email']}"
+                                                       required name="email" class="form-control"
+                                                       id="editEmail{$index}">
+                                            </div>
+                                            <input type="submit" id="editUserSubmit{$index}" hidden/>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">取消
+                                        </button>
+                                        <button type="submit" class="btn btn-primary"
+                                                onclick="clickSubmit('#editUserSubmit{$index}')">修改
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin: 0 10px;">
+                        <button type="button" class="btn btn-danger"
+                                onclick="deleteUser('{$user[\'id\']}', '{$user[\'username\'] | base64_decode}')">删除
+                        </button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
+    <nav aria-label="Page navigation">
+        <ul class="pagination" id="pagination">
+            <li class="page-item {$page == 1 ? 'disabled' : ''}">
+                <a class="page-link pointer">上一页</a>
+            </li>
+            {for start="1" end="$lastPage" comparison="elt" step="1"}
+
+            <li class="page-item {$page == $i ? 'active' : ''}">
+                <a class="page-link pointer">{$i}</a>
+            </li>
+            {/for}
+            <li class="page-item {$page == $lastPage ? 'disabled' : ''}">
+                <a class="page-link pointer">下一页</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+    function clickSubmit(id) {
+        $(id).click();
+    }
+
+    function modifyUser(event, modal_id, form, method = 'POST', user_id = null) {
+        event.preventDefault();
+        let form_data = new FormData(event.target);
+        let send_data = null;
+        if (user_id) {
+            send_data = {
+                username: form_data.get('username'),
+                email: form_data.get('email'),
+                user_id,
+            };
+        } else {
+            send_data = {
+                username: form_data.get('username'),
+                password: md5(form_data.get('password')),
+                email: form_data.get('email'),
+            };
+        }
+        $.ajax({
+            type: method,
+            contentType: 'application/json;charset=UTF-8',
+            headers: {
+                Authorization: getToken(),
+            },
+            url: form.attr('action'),
+            data: JSON.stringify(send_data),
+            success: (data) => {
+                if (data.success) {
+                    $('#' + modal_id).modal('hide');
+                    messageEx(data.result, 'success', 800);
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    messageEx(data.message, 'danger');
+                }
+            },
+            error: (error) => {
+                console.error(error);
+            }
+        });
+    }
+
+    function deleteUser(user_id, user_name) {
+        confirmEx({
+            title: "删除用户",
+            message: "是否删除用户" + user_name,
+            callback: result => {
+                if (!result) {
+                    return;
+                }
+                $.ajax({
+                    type: 'DELETE',
+                    contentType: 'application/json;charset=UTF-8',
+                    headers: {
+                        Authorization: getToken(),
+                    },
+                    url: 'user',
+                    data: JSON.stringify({user_id}),
+                    success: (data) => {
+                        if (data.success) {
+                            messageEx(data.result, 'success', 800);
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            messageEx(data.message, 'danger');
+                        }
+                    },
+                    error: (error) => {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    }
+
+    function importUser(event, modal_id) {
+        event.preventDefault();
+        let files = $('#import-file')[0].files[0]
+        let send_data = new FormData();
+        send_data.append('file', files);
+        $.ajax({
+            url: 'api/User/user_file',
+            type: 'POST',
+            headers: {
+                Authorization: getToken(),
+            },
+            data: send_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: (data) => {
+                if (data.success) {
+                    $('#' + modal_id).modal('hide');
+                    let str = '';
+                    for (let msg of data.result) {
+                        str += msg + '<br />';
+                    }
+                    messageEx(str, 'success', 800);
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    if (typeof data.result === 'string') {
+                        messageEx(data.result, 'danger');
+                    } else {
+                        let str = '';
+                        for (let msg of data.result) {
+                            str += msg + '<br />';
+                        }
+                        messageEx(str, 'danger');
+                    }
+                }
+            },
+            error: (error) => {
+                console.error(error);
+            }
+        })
+    }
+
+    function init() {
+        activeNav('#nav-user');
+        let su = "{$su ?: ''}";
+        if (su) {
+            $('#search-name').val(su);
+        }
+        $('#search-name').on('change', function (e) {
+            if (this.value !== this.value.trim()) {
+                $(this).val(this.value.trim());
+            } else {
+                window.location.href = '/user.html?su=' + this.value + '&page=1&limit={$limit}';
+            }
+        });
+        $('#pagination a.page-link').click(function () {
+            let currentPage = $(this).text();
+            if (currentPage == '上一页') {
+                if ('{$page}' == 1) {
+                    return;
+                }
+                currentPage = '{$page - 1}';
+            } else if (currentPage == '下一页') {
+                if ('{$page == $lastPage}') {
+                    return;
+                }
+                currentPage = '{$page + 1}';
+            }
+            let params = [
+                'page=' + currentPage,
+                "limit={$limit}"
+            ];
+            if ("{$su}") {
+                params.push("su={$su}");
+            }
+            window.location.href = '/user.html?' + params.join('&');
+        });
+    }
+
+    init();
+</script>
+{/block}

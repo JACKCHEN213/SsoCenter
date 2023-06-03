@@ -17,4 +17,8 @@ class ResponseCode
     public static int $USER_EXISTS = 10008;
     public static int $ADD_USER_SUCCESS = 10009;
     public static int $JWT_SUCCESS = 10010;
+    public static int $UPDATE_USER_SUCCESS = 10011;
+    public static int $DELETE_USER_SUCCESS = 10012;
+    public static int $BATCH_ADD_ERROR = 10013;
+    public static int $BATCH_ADD_SUCCESS = 10014;
 }

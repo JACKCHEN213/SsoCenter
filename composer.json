@@ -20,7 +20,8 @@
         "topthink/framework": "5.1.*",
         "squizlabs/php_codesniffer": "^3.7",
         "ext-openssl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "phpoffice/phpspreadsheet": "^1.28"
     },
     "autoload": {
         "psr-4": {

@@ -37,16 +37,20 @@ class Login extends Controller
             }
             $ip = request()->ip();
             $login_time = date('Y-m-d H:i:s');
-            DB::name('login_history')->insert([
+            Db::name('login_history')->insert([
                 'username' => $username,
                 'ip' => $ip,
                 'login_time' => $login_time,
+            ]);
+            Db::name('user')->where('id', $user['id'])->update([
+                'ip' => $ip,
             ]);
             $token = $this->getToken([
                 'ip' => $ip,
                 'login_time' => $login_time,
                 'username' => $username,
                 'id' => $user['id'],
+                'type' => $user['type'],
             ]);
             return sendJson($token);
         } catch (\Exception $e) {
@@ -75,11 +79,17 @@ class Login extends Controller
                 return sendJson('token错误', ResponseCode::$JWT_ERROR, ResponseMessage::$JWT_ERROR, false);
             }
             if (!Db::name('user')->find($userData->id)) {
-                return sendJson('用户' . $userData->username . '不存在', ResponseCode::$JWT_ERROR, ResponseMessage::$JWT_ERROR, false);
+                return sendJson(
+                    '用户' . $userData->username . '不存在',
+                    ResponseCode::$JWT_ERROR,
+                    ResponseMessage::$JWT_ERROR,
+                    false
+                );
             }
             return sendJson([
                 'username' => $userData->username,
                 'id' => base64_encode($userData->id),
+                'type' => $userData->type,
             ], ResponseCode::$JWT_SUCCESS, ResponseMessage::$JWT_SUCCESS);
         } catch (\Exception $e) {
             recordLog($e, 'error');

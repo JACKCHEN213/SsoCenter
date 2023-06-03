@@ -17,4 +17,8 @@ class ResponseMessage
     public static string $USER_EXISTS = "用户已经存在了";
     public static string $ADD_USER_SUCCESS = "用户添加成功";
     public static string $JWT_SUCCESS = "身份验证成功";
+    public static string $UPDATE_USER_SUCCESS = "用户修改成功";
+    public static string $DELETE_USER_SUCCESS = "用户删除成功";
+    public static string $BATCH_ADD_ERROR = "批量添加用户失败";
+    public static string $BATCH_ADD_SUCCESS = "批量添加用户成功";
 }
