@@ -17,7 +17,7 @@ function confirmEx(params) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="confirmExCancel" data-bs-dismiss="modal">${params.cancel !== undefined ? params.cancel : '取消'}</button>
-                    <button type="button" class="btn btn-primary" id="confirmExConfirm">${params.confirm !== undefined ? params.confirm : '确定'}确定</button>
+                    <button type="button" class="btn btn-primary" id="confirmExConfirm">${params.confirm !== undefined ? params.confirm : '确定'}</button>
                 </div>
             </div>
         </div>
