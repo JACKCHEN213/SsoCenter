@@ -50,6 +50,17 @@
         .pointer {
             cursor: pointer;
         }
+
+        .modal-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
     </style>
     {block name="head"}{/block}
 </head>
