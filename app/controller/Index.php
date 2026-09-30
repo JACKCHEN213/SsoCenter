@@ -14,7 +14,11 @@ class Index extends BaseController
             ->field(['id', 'username', 'password'])
             ->find(1);
         $apps = Db::name('site')
-            ->field(['name', 'image', 'request_url', 'redirect_url', 'is_use', 'public_key', 'app_path', 'id',])
+            ->field([
+                'name', 'image', 'request_url', 'redirect_url', 'is_use', 'public_key',
+                 'app_path', 'id', 'client_id', 'allowed_grant_types', 'scope',
+                  'access_token_ttl', 'refresh_token_ttl', 'code_ttl', 'logout_callback_url'
+            ])
             ->where('is_del', 0)
             ->select();
         View::assign([
@@ -22,15 +26,5 @@ class Index extends BaseController
             'apps' => $apps,
         ]);
         return View::fetch('/index');
-    }
-
-    public function settings()
-    {
-        return $this->fetch('system_manage.settings');
-    }
-
-    public function account()
-    {
-        return $this->fetch('/account');
     }
 }

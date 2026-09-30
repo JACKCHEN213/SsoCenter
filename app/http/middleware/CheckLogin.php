@@ -7,6 +7,7 @@ use app\common\ResponseCode;
 use app\common\ResponseMessage;
 use Closure;
 use extra\JWT;
+use think\facade\Db;
 use think\Request;
 
 class CheckLogin
@@ -35,12 +36,26 @@ class CheckLogin
             }
         }
         $token = $request->header('authorization');
+        if (!$token) {
+            return sendJson('会话已被终止', ResponseCode::$JWT_ERROR, '会话已被终止');
+        }
         try {
-            JWT::decode(
+            $payload = JWT::decode(
                 $token,
                 Key::getPublicKey(config('common.JWT_KEY_PATH'), config('common.JWT_KEY_NAME')),
                 array_keys(JWT::$supported_algs)
             );
+
+            // 额外校验 session 活跃状态
+            $jti = $payload->jti ?? null;
+            if ($jti) {
+                $session = Db::name('user_sessions')->where('token_jti', $jti)->find();
+                if ($session && !$session['is_active']) {
+                    return sendJson('会话已被终止', ResponseCode::$JWT_ERROR, '会话已被终止');
+                }
+                // 如果 session 不存在（旧会话），放行（向后兼容）
+            }
+
             return $next($request);
         } catch (\Throwable $e) {
             if ($method == 'get') {

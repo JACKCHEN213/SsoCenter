@@ -1,6 +1,21 @@
 {extend name="template/index" /}
 {block name="title"}用户管理{/block}
 {block name="head"}
+<style>
+    .push-status-icon { font-size: 1.1rem; }
+    .push-status-icon.success { color: #198754; }
+    .push-status-icon.fail { color: #dc3545; }
+    .push-status-icon.pending { color: #6c757d; }
+    .push-error-msg { font-size: 0.75rem; color: #dc3545; display: block; margin-top: 2px; }
+    .push-log-detail { font-size: 0.8rem; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 4px; word-break: break-all; }
+    .push-log-detail pre { margin: 0; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+    .push-detail-section { margin-bottom: 16px; }
+    .push-detail-section h6 { background: #f1f3f5; padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .push-detail-section pre { background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 0.8rem; max-height: 300px; overflow-y: auto; margin: 0; white-space: pre-wrap; word-break: break-all; border: 1px solid #e9ecef; }
+    .push-detail-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .push-detail-row .badge { font-size: 0.8rem; }
+    .push-detail-row code { font-size: 0.82rem; background: #f1f3f5; padding: 2px 6px; border-radius: 3px; }
+</style>
 {/block}
 
 {block name="content"}
@@ -104,13 +119,13 @@
         <thead>
         <tr>
             <th style="width: 5%">#</th>
-            <th style="width: 15%">用户名称</th>
+            <th style="width: 10%">用户名称</th>
             <th style="width: 15%">邮箱地址</th>
             <th style="width: 10%">用户状态</th>
             <th style="width: 10%">用户身份</th>
             <th style="width: 10%">上次登录IP</th>
             <th style="width: 15%">上次登录时间</th>
-            <th style="width: 15%">操作</th>
+            <th style="width: 20%">操作</th>
         </tr>
         </thead>
         <tbody>
@@ -182,7 +197,12 @@
                     </div>
                     <div style="margin: 0 10px;">
                         <button type="button" class="btn btn-danger"
-                                onclick="deleteUser('{$user[\'id\']}', '{$user[\'username\'] | base64_decode}')">删除
+                                onclick="deleteUser('{$user[\'id\']}', '{$user[\'username\']}')">删除
+                        </button>
+                    </div>
+                    <div style="margin: 0 10px;">
+                        <button type="button" class="btn btn-success"
+                                onclick="openPushModal('{$user[\'id\']}', '{$user[\'username\']}')">推送
                         </button>
                     </div>
                 </div>
@@ -207,6 +227,88 @@
             </li>
         </ul>
     </nav>
+
+    <!-- 推送状态弹窗 -->
+    <div class="modal fade" id="pushStatusModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="pushStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pushStatusModalLabel">用户推送状态</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <span>用户：<strong id="pushStatusUsername"></strong></span>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="pushUserToAll()">
+                                <i class="bi bi-send"></i> 全部推送
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="reloadPushStatus()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pushStatusTableWrap">
+                        <table class="table table-bordered align-middle" id="pushStatusTable">
+                            <thead>
+                            <tr>
+                                <th style="width: 20%">应用名称</th>
+                                <th style="width: 10%">操作类型</th>
+                                <th style="width: 25%">推送状态</th>
+                                <th style="width: 15%">externalId</th>
+                                <th style="width: 15%">推送时间</th>
+                                <th style="width: 15%">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="pushStatusTbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="pushStatusEmpty" class="text-center text-muted py-4" style="display:none;">
+                        暂无已配置推送接口的应用
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推送日志弹窗 -->
+    <div class="modal fade" id="pushLogModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">推送日志</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pushLogContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推送详情弹窗 -->
+    <div class="modal fade" id="pushDetailModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 900px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> 推送详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="pushDetailBody" style="max-height: 75vh; overflow-y: auto;">
+                    <div class="text-center text-muted py-3">加载中...</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {/block}
 
@@ -334,6 +436,412 @@
                 console.error(error);
             }
         })
+    }
+
+    // ========== 推送管理（T5.1 - T5.5）==========
+
+    let pushCurrentUserId = null;
+    let pushCurrentUsername = '';
+    let pushStatusModal = null;
+    let pushLogModal = null;
+
+    const PUSH_ACTION_LABELS = {
+        create: '新增',
+        update: '修改',
+        delete: '删除'
+    };
+
+    /**
+     * 打开推送状态弹窗
+     */
+    function openPushModal(user_id, username) {
+        pushCurrentUserId = user_id;
+        pushCurrentUsername = username;
+        $('#pushStatusUsername').text(username);
+        if (!pushStatusModal) {
+            pushStatusModal = new bootstrap.Modal('#pushStatusModal');
+        }
+        pushStatusModal.show();
+        reloadPushStatus();
+    }
+
+    /**
+     * 重新加载推送状态
+     */
+    function reloadPushStatus() {
+        if (!pushCurrentUserId) return;
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: getToken() },
+            url: 'user/push_status',
+            data: JSON.stringify({ user_id: pushCurrentUserId }),
+            success: function (data) {
+                if (data.code === 0) {
+                    renderPushStatusTable(data.result || []);
+                } else {
+                    messageEx(data.result || data.message || '加载失败', 'danger', 800);
+                }
+            },
+            error: function () {
+                messageEx('请求失败', 'danger', 800);
+            }
+        });
+    }
+
+    /**
+     * 渲染推送状态表格
+     */
+    function renderPushStatusTable(statusList) {
+        let tbody = document.getElementById('pushStatusTbody');
+        let emptyDiv = document.getElementById('pushStatusEmpty');
+        let tableWrap = document.getElementById('pushStatusTableWrap');
+        if (!statusList || statusList.length === 0) {
+            tbody.innerHTML = '';
+            tableWrap.style.display = 'none';
+            emptyDiv.style.display = '';
+            return;
+        }
+        tableWrap.style.display = '';
+        emptyDiv.style.display = 'none';
+        let html = '';
+        statusList.forEach(function (item) {
+            let lastPush = item.last_push;
+            let statusHtml;
+            if (!lastPush) {
+                statusHtml = '<span class="push-status-icon pending">○</span> 未推送';
+            } else if (lastPush.is_success) {
+                statusHtml = '<span class="push-status-icon success">✓</span> 成功';
+            } else {
+                statusHtml = '<span class="push-status-icon fail">✗</span> 失败';
+                // T6.2 显示 failed_rule 描述
+                let errorMsg = lastPush.failed_rule || lastPush.error_message;
+                if (errorMsg) {
+                    statusHtml += '<span class="push-error-msg">' + escapeHtml(errorMsg) + '</span>';
+                }
+            }
+            let pushTime = lastPush ? (lastPush.push_time || '-') : '-';
+            let actionLabel = lastPush ? (PUSH_ACTION_LABELS[lastPush.action] || lastPush.action) : '-';
+            let externalId = item.external_id || (lastPush ? (lastPush.external_id || '') : '');
+            let externalIdHtml = externalId ? '<code style="font-size:0.8rem;">' + escapeHtml(externalId) + '</code>' : '<span class="text-muted">-</span>';
+            let btnText = lastPush ? '重推' : '推送';
+            let btnClass = lastPush ? (lastPush.is_success ? 'btn-outline-primary' : 'btn-warning') : 'btn-primary';
+
+            html += '<tr>'
+                + '<td>' + escapeHtml(item.site_name || '') + '</td>'
+                + '<td>' + actionLabel + '</td>'
+                + '<td>' + statusHtml + '</td>'
+                + '<td>' + externalIdHtml + '</td>'
+                + '<td>' + pushTime + '</td>'
+                + '<td>'
+                + '<div class="btn-group btn-group-sm">'
+                + '<button style="margin-right: 8px" class="btn ' + btnClass + '" onclick="pushUserToSite(' + item.site_id + ')">' + btnText + '</button>'
+                + (lastPush ? '<button style="margin-right: 8px" class="btn btn-outline-info" onclick="viewPushDetail(' + pushCurrentUserId + ',' + item.site_id + ',' + lastPush.log_id + ')">详情</button>' : '')
+                + (lastPush ? '<button class="btn btn-outline-secondary" onclick="viewPushLog(' + item.site_id + ')">历史</button>' : '')
+                + '</div>'
+                + '</td>'
+                + '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /**
+     * 推送用户到指定应用
+     */
+    function pushUserToSite(site_id) {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: getToken() },
+            url: 'user/push',
+            data: JSON.stringify({ user_id: pushCurrentUserId, site_id: site_id }),
+            success: function (data) {
+                if (data.code === 0) {
+                    let result = data.result;
+                    if (result.not_configured) {
+                        messageEx(result.error_message || '未配置推送接口', 'warning', 800);
+                    } else if (result.is_success) {
+                        messageEx('推送成功', 'success', 800);
+                    } else {
+                        messageEx('推送失败：' + (result.error_message || '未知错误'), 'danger', 800);
+                    }
+                    reloadPushStatus();
+                } else {
+                    messageEx(data.result || data.message || '推送失败', 'danger', 800);
+                }
+            },
+            error: function () {
+                messageEx('请求失败', 'danger', 800);
+            }
+        });
+    }
+
+    /**
+     * 全部推送
+     */
+    function pushUserToAll() {
+        if (!pushCurrentUserId) return;
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: getToken() },
+            url: 'user/push_all',
+            data: JSON.stringify({ user_id: pushCurrentUserId }),
+            success: function (data) {
+                if (data.code === 0) {
+                    let summary = data.result && data.result.summary ? data.result.summary : '推送完成';
+                    messageEx(summary, 'success', 1200);
+                    reloadPushStatus();
+                } else {
+                    messageEx(data.result || data.message || '推送失败', 'danger', 800);
+                }
+            },
+            error: function () {
+                messageEx('请求失败', 'danger', 800);
+            }
+        });
+    }
+
+    /**
+     * 查看推送日志
+     */
+    function viewPushLog(site_id) {
+        if (!pushCurrentUserId) return;
+        if (!pushLogModal) {
+            pushLogModal = new bootstrap.Modal('#pushLogModal');
+            $('#pushLogModal').on('show.bs.modal', function () {
+                $(this).css('z-index', 10058);
+                setTimeout(() => {
+                    $(pushLogModal._backdrop._element).css('z-index', 10057);
+                }, 0);
+            });
+        }
+        $('#pushLogContent').html('<div class="text-center text-muted py-3">加载中...</div>');
+        pushLogModal.show();
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: getToken() },
+            url: 'user/push_log',
+            data: JSON.stringify({ user_id: pushCurrentUserId, site_id: site_id }),
+            success: function (data) {
+                if (data.code === 0) {
+                    renderPushLogContent(data.result || []);
+                } else {
+                    $('#pushLogContent').html('<div class="text-danger">加载失败</div>');
+                }
+            },
+            error: function () {
+                $('#pushLogContent').html('<div class="text-danger">请求失败</div>');
+            }
+        });
+    }
+
+    /**
+     * 渲染推送日志列表（T6.3 增强版：展示 request_headers、external_id、failed_rule）
+     */
+    function renderPushLogContent(logs) {
+        if (!logs || logs.length === 0) {
+            $('#pushLogContent').html('<div class="text-center text-muted py-3">暂无推送日志</div>');
+            return;
+        }
+        let html = '';
+        logs.forEach(function (log) {
+            let statusBadge = log.is_success
+                ? '<span class="badge bg-success">成功</span>'
+                : '<span class="badge bg-danger">失败</span>';
+            html += '<div class="push-log-detail mb-2">'
+                + '<div class="mb-1">'
+                + statusBadge
+                + ' <strong>' + escapeHtml(log.action) + '</strong>'
+                + ' <span class="text-muted">' + escapeHtml(log.push_time) + '</span>'
+                + '</div>'
+                + '<div><strong>URL:</strong> <code>' + escapeHtml(log.method) + ' ' + escapeHtml(log.url) + '</code></div>'
+                + '<div><strong>响应码:</strong> ' + (log.response_code || '-') + '</div>';
+
+            // externalId
+            if (log.external_id) {
+                html += '<div><strong>externalId:</strong> <code>' + escapeHtml(log.external_id) + '</code></div>';
+            }
+
+            // 请求头（脱敏展示）
+            let headers = log.request_headers;
+            if (headers && typeof headers === 'object') {
+                let headerLines = [];
+                for (let k in headers) {
+                    if (headers.hasOwnProperty(k)) {
+                        let val = (k.toLowerCase() === 'x-trust-signature') ? '***' : headers[k];
+                        headerLines.push(escapeHtml(k) + ': ' + escapeHtml(String(val)));
+                    }
+                }
+                if (headerLines.length > 0) {
+                    html += '<div><strong>请求头:</strong><pre>' + headerLines.join('\n') + '</pre></div>';
+                }
+            }
+
+            // 请求体
+            if (log.request_body) {
+                html += '<div><strong>请求体:</strong><pre>' + formatJson(log.request_body) + '</pre></div>';
+            }
+
+            // 响应体
+            if (log.response_body) {
+                html += '<div><strong>响应体:</strong><pre>' + formatJson(log.response_body) + '</pre></div>';
+            }
+
+            // failed_rule
+            if (log.failed_rule) {
+                html += '<div class="text-danger"><strong>失败规则:</strong> ' + escapeHtml(log.failed_rule) + '</div>';
+            } else if (log.error_message) {
+                html += '<div class="text-danger"><strong>错误:</strong> ' + escapeHtml(log.error_message) + '</div>';
+            }
+
+            html += '</div>';
+        });
+        $('#pushLogContent').html(html);
+    }
+
+    function truncateStr(str, maxLen) {
+        if (!str) return '';
+        return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
+    }
+
+    /**
+     * 查看单条推送详情
+     */
+    let pushDetailModal = null;
+    function viewPushDetail(userId, siteId, logId) {
+        if (!pushDetailModal) {
+            pushDetailModal = new bootstrap.Modal('#pushDetailModal');
+            $('#pushDetailModal').on('show.bs.modal', function () {
+                $(this).css('z-index', 10058);
+                setTimeout(() => {
+                    $(pushDetailModal._backdrop._element).css('z-index', 10057);
+                }, 0);
+            });
+        }
+        $('#pushDetailBody').html('<div class="text-center text-muted py-3">加载中...</div>');
+        pushDetailModal.show();
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: getToken() },
+            url: 'user/push_log',
+            data: JSON.stringify({ log_id: logId, user_id: userId, site_id: siteId }),
+            success: function (data) {
+                if (data.code === 0 && data.result) {
+                    renderPushDetail(data.result);
+                } else {
+                    $('#pushDetailBody').html('<div class="text-danger">加载失败</div>');
+                }
+            },
+            error: function () {
+                $('#pushDetailBody').html('<div class="text-danger">请求失败</div>');
+            }
+        });
+    }
+
+    /**
+     * 渲染推送详情
+     */
+    function renderPushDetail(log) {
+        let statusBadge = log.is_success
+            ? '<span class="badge bg-success">✓ 成功</span>'
+            : '<span class="badge bg-danger">✗ 失败</span>';
+        let actionLabel = PUSH_ACTION_LABELS[log.action] || log.action;
+
+        let html = '';
+
+        // 概要信息
+        html += '<div class="push-detail-section">';
+        html += '<h6><i class="bi bi-info-circle"></i> 概要</h6>';
+        html += '<div class="push-detail-row">';
+        html += '<div>' + statusBadge + '</div>';
+        html += '<div><strong>操作:</strong> ' + escapeHtml(actionLabel) + '</div>';
+        html += '<div><strong>时间:</strong> ' + escapeHtml(log.push_time) + '</div>';
+        if (log.external_id) {
+            html += '<div><strong>externalId:</strong> <code>' + escapeHtml(log.external_id) + '</code></div>';
+        }
+        html += '</div>';
+        html += '</div>';
+
+        // 请求信息
+        html += '<div class="push-detail-section">';
+        html += '<h6><i class="bi bi-arrow-right-circle"></i> 请求</h6>';
+        html += '<div class="push-detail-row">';
+        html += '<div><strong>Method:</strong> <code>' + escapeHtml(log.method) + '</code></div>';
+        html += '<div><strong>响应码:</strong> <code>' + (log.response_code || '-') + '</code></div>';
+        html += '</div>';
+        html += '<div class="mb-2"><strong>URL:</strong><br><code style="word-break: break-all;">' + escapeHtml(log.url) + '</code></div>';
+
+        // 请求头
+        let headers = log.request_headers;
+        if (headers && typeof headers === 'object') {
+            let headerLines = [];
+            for (let k in headers) {
+                if (headers.hasOwnProperty(k)) {
+                    headerLines.push(escapeHtml(k) + ': ' + escapeHtml(String(headers[k])));
+                }
+            }
+            if (headerLines.length > 0) {
+                html += '<div class="mb-2"><strong>请求头:</strong><pre>' + headerLines.join('\n') + '</pre></div>';
+            }
+        }
+
+        // 请求体
+        if (log.request_body) {
+            html += '<div class="mb-2"><strong>请求体:</strong><pre>' + formatJson(log.request_body) + '</pre></div>';
+        }
+        html += '</div>';
+
+        // 响应信息
+        html += '<div class="push-detail-section">';
+        html += '<h6><i class="bi bi-arrow-left-circle"></i> 响应</h6>';
+        if (log.response_body) {
+            html += '<pre>' + formatJson(log.response_body) + '</pre>';
+        } else {
+            html += '<div class="text-muted">无响应内容</div>';
+        }
+        html += '</div>';
+
+        // 失败信息
+        if (log.failed_rule) {
+            html += '<div class="push-detail-section">';
+            html += '<h6 class="text-danger"><i class="bi bi-exclamation-triangle"></i> 失败规则</h6>';
+            html += '<div class="text-danger">' + escapeHtml(log.failed_rule) + '</div>';
+            html += '</div>';
+        }
+        if (log.error_message) {
+            html += '<div class="push-detail-section">';
+            html += '<h6 class="text-danger"><i class="bi bi-exclamation-circle"></i> 错误信息</h6>';
+            html += '<div class="text-danger">' + escapeHtml(log.error_message) + '</div>';
+            html += '</div>';
+        }
+
+        $('#pushDetailBody').html(html);
+    }
+
+    /**
+     * 格式化 JSON 字符串（美化输出）
+     */
+    function formatJson(str) {
+        if (!str) return '';
+        try {
+            let parsed;
+            if (typeof str === 'string') {
+                parsed = JSON.parse(str);
+            } else {
+                parsed = str;
+            }
+            return escapeHtml(JSON.stringify(parsed, null, 2));
+        } catch (e) {
+            // 非合法 JSON，原样返回
+            return escapeHtml(str);
+        }
     }
 
     function init() {

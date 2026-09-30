@@ -27,7 +27,9 @@
         "phpoffice/phpspreadsheet": "^5.7",
         "ext-json": "*",
         "ext-openssl": "*",
-        "topthink/think-view": "^2.0"
+        "topthink/think-view": "^2.0",
+        "guzzlehttp/guzzle": "^8.0",
+        "lizhichao/one-sm": "^1.10"
     },
     "require-dev": {
         "topthink/think-dumper": "^1.0",

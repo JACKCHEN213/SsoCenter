@@ -6,11 +6,12 @@ let FileInput = function () {
     this.token = null;
 };
 
-FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, showName, app=null, token=null) {
+FileInput.prototype.Init = function (appId, ctrlName, uploadUrl, deleteUploadedUrl, showName, app=null, token=null) {
     self = this;
     //初始化fileinput控件（第一次初始化）
     this.control = $('#' + ctrlName);
     this.image_show = $('#' + showName);
+    this.app_id = appId;
     let initial_preview = [];
     let initial_preview_config = [];
     if (app) {
@@ -50,7 +51,7 @@ FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, sho
     }).on("fileuploaded", function (event, data) {
         $('img.file-preview-image').attr('src', data.response.result);
         self.is_uploaded = true;
-        self.image_show.attr('value', data.response.result);
+        self.image_show.val(data.response.result);
         self.control.closest('div.btn-file')
             .addClass('disabled')
             .closest('input.form-control')
@@ -87,7 +88,7 @@ FileInput.prototype.Init = function (ctrlName, uploadUrl, deleteUploadedUrl, sho
     }).on('filepredelete', function (event, key, jqXHR) {
         jqXHR.abort();
         self.is_uploaded = false
-        self.image_show.attr('value', '');
+        self.image_show.val('');
         self.control.fileinput('clear');
     });
     if (app && app.image !== undefined && app.image) {
@@ -122,13 +123,13 @@ FileInput.prototype.deleteUploadedImage = function (event, deleteUploadedUrl, ca
                 contentType: 'application/json;charset=UTF-8',
                 url: deleteUploadedUrl,
                 headers,
-                data: JSON.stringify({image_url: this.image_show.attr('value')}),
+                data: JSON.stringify({image_url: this.image_show.val(), app_id: this.app_id}),
                 success: (data) => {
                     if (data.code !== 0) {
                         messageEx(data.result, 'danger');
                     }
                     this.is_uploaded = false;
-                    this.image_show.attr('value', '');
+                    this.image_show.val('');
                     callback && callback();
                 },
                 error: (error) => {

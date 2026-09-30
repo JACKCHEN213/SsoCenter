@@ -4,312 +4,1530 @@
 <script src="/assets/js/fileinput.min.js"></script>
 <script src="/assets/js/zh.js"></script>
 <link rel="stylesheet" href="/assets/css/fileinput.min.css">
+<style>
+    /* 授权模式标签 */
+    .grant-type-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 2px;
+    }
+    .grant-type-badge.authorization_code { background: #e3f2fd; color: #1565c0; }
+    .grant-type-badge.implicit { background: #e8f5e9; color: #2e7d32; }
+    .grant-type-badge.password { background: #fff3e0; color: #e65100; }
+    .grant-type-badge.client_credentials { background: #f3e5f5; color: #6a1b9a; }
+    .grant-type-badge.unconfigured { background: #f0f0f0; color: #9e9e9e; }
+
+    /* APP_ID 展示区 */
+    .app-id-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        word-break: break-all;
+    }
+    .app-id-display .copy-btn {
+        cursor: pointer;
+        opacity: 0.6;
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+    .app-id-display .copy-btn:hover { opacity: 1; }
+
+    /* APP_KEY 展示区 */
+    .secret-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        word-break: break-all;
+    }
+    .secret-display .secret-value {
+        flex: 1;
+        word-break: break-all;
+    }
+    .secret-display button {
+        flex-shrink: 0;
+    }
+
+    /* OAuth 配置区 */
+    .oauth-config-fieldset {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+    .oauth-config-fieldset legend {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.75rem;
+    }
+    .ttl-input-group {
+        display: flex;
+        gap: 4px;
+    }
+    .ttl-input-group input { flex: 2; }
+    .ttl-input-group select { flex: 1; }
+
+    /* 表格内点击复制 */
+    .client-id-click {
+        font-family: monospace;
+        font-size: 12px;
+        cursor: pointer;
+        color: #15a362;
+    }
+    .client-id-click:hover { color: #0d6efd; }
+    .client-id-click.unconfigured {
+        font-family: inherit;
+        color: #9e9e9e;
+        cursor: default;
+        font-style: italic;
+    }
+
+    /* 操作按钮紧凑 */
+    .op-buttons { display: flex; flex-wrap: wrap; gap: 4px; }
+    .op-buttons .btn { padding: 2px 8px; font-size: 12px; }
+
+    /* 添加成功凭证展示 */
+    .credential-display {
+        background: #fff8e1;
+        border: 1px solid #ffe082;
+        border-radius: 6px;
+        padding: 12px;
+        margin-top: 8px;
+    }
+    .credential-display .label { font-weight: 600; color: #f57c00; margin-bottom: 4px; }
+    .credential-display .value {
+        font-family: monospace;
+        word-break: break-all;
+        padding: 6px 8px;
+        background: white;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+
+    /* 推送接口配置区域 */
+    .push-config-fieldset {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+    .push-config-fieldset legend {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.75rem;
+    }
+    .push-auth-section {
+        border: 1px solid #cfe2ff;
+        background: #f0f7ff;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 0.75rem;
+    }
+    .push-auth-section .auth-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #0d6efd;
+        margin-bottom: 8px;
+    }
+    .push-api-panel {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+    }
+    .push-api-panel .push-api-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        cursor: pointer;
+        border-radius: 6px 6px 0 0;
+        user-select: none;
+    }
+    .push-api-panel .push-api-header.collapsed {
+        border-radius: 6px;
+    }
+    .push-api-panel .push-api-header .push-api-title {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    .push-api-panel .push-api-header .push-api-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    .push-api-panel .push-api-body {
+        padding: 12px;
+        border-top: 1px solid #dee2e6;
+    }
+    .push-api-panel .push-api-body .row { margin-bottom: 0.5rem; }
+
+    /* 动态行表格 */
+    .push-dynamic-table {
+        width: 100%;
+        font-size: 0.85rem;
+    }
+    .push-dynamic-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        padding: 4px 6px;
+        font-size: 0.8rem;
+        color: #495057;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .push-dynamic-table td {
+        padding: 3px 4px;
+        vertical-align: middle;
+    }
+    .push-dynamic-table .form-control,
+    .push-dynamic-table .form-select {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+        height: auto;
+    }
+    .push-dynamic-table .btn-remove-row {
+        padding: 1px 6px;
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+    .push-section-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin: 8px 0 4px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .push-section-label .btn-add-row {
+        font-size: 0.75rem;
+        padding: 1px 8px;
+    }
+
+    /* 详情弹窗展示 */
+    .push-detail-config {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 8px 12px;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+    }
+    .push-detail-config .push-detail-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 90px;
+        display: inline-block;
+    }
+    .push-detail-config .push-detail-sub-table {
+        font-size: 0.8rem;
+        margin: 4px 0;
+        width: 100%;
+    }
+    .push-detail-config .push-detail-sub-table th {
+        background: #e9ecef;
+        padding: 2px 6px;
+        font-weight: 600;
+    }
+    .push-detail-config .push-detail-sub-table td {
+        padding: 2px 6px;
+    }
+</style>
 {/block}
 
 {block name="content"}
 <div class="container-xl">
 
-	<h1 class="app-page-title">应用列表</h1>
+    <h1 class="app-page-title">应用列表</h1>
 
-	<div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert">
-		<div class="inner">
-			<div class="app-card-body p-3 p-lg-4">
-				<h3 class="mb-3">欢迎登录服务注册中心, 用户<u>{$user['username']}</u></h3>
-				<div class="row gx-5 gy-3">
-					<div class="col-12 col-lg-9">
-						<div>xxxxxxxxxxxxxxxxxx</div>
-					</div><!--//col-->
-					<div class="col-12 col-lg-3">
-						<a class="btn app-btn-primary" href="system_manage/notifications.html">
-							<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-file-earmark-arrow-down me-2" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-								<path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
-								<path d="M9.5 3V0L14 4.5h-3A1.5 1.5 0 0 1 9.5 3z"/>
-								<path fill-rule="evenodd" d="M8 6a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 10.293V6.5A.5.5 0 0 1 8 6z"/>
-							</svg>
-							<span>立即查看</span>
-						</a>
-					</div><!--//col-->
-				</div><!--//row-->
-				<!--						    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
-			</div><!--//app-card-body-->
+    <div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert">
+        <div class="inner">
+            <div class="app-card-body p-3 p-lg-4">
+                <h3 class="mb-3">欢迎登录服务注册中心, 用户<u>{$user['username']}</u></h3>
+                <div class="row gx-5 gy-3">
+                    <div class="col-12">
+                        <div>{:date('Y-m-d H:i:s')}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-		</div><!--//inner-->
-	</div><!--//app-card-->
+    <table class="table table-striped table-bordered caption-top align-middle" style="word-break:break-all;">
+        <caption>
+            <button type="button" class="btn btn-primary" onclick="initModal('addApp', 'appImg', 'appImgUrl')">添加应用</button>
 
-	<table class="table table-striped table-bordered caption-top align-middle"
-		   style="word-break:break-all;">
-		<caption>
-			<button type="button" class="btn btn-primary" onclick="initModal('addApp', 'appImg', 'appImgUrl')">添加应用</button>
+            <!-- 添加应用弹窗 -->
+            <div class="modal fade" id="addApp" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addAppLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="addAppLabel">添加应用</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="app/add" id="addAppForm" method="post" onsubmit="modifyApp(event, 'addApp', $(this))">
+                                <div class="mb-3">
+                                    <label for="appImg" class="col-form-label">应用图片</label>
+                                    <input type="file" name="" class="form-control" id="appImg">
+                                    <label for="appImgUrl"></label>
+                                    <input type="text" name="app_img_url" class="form-control" id="appImgUrl" hidden>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="app_name" class="col-form-label">应用名称</label>
+                                    <input type="text" autocomplete="off" required name="app_name" class="form-control" id="app_name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="request_url" class="col-form-label">请求路径</label>
+                                    <input type="text" autocomplete="off" required name="app_request_url" class="form-control" id="request_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="redirect_url" class="col-form-label">跳转路径</label>
+                                    <input type="text" autocomplete="off" required name="app_redirect_url" class="form-control" id="redirect_url">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="logout_callback_url" class="col-form-label">登出回调地址 <small class="text-muted">（可选）</small></label>
+                                    <input type="text" autocomplete="off" name="app_logout_callback_url" class="form-control" id="logout_callback_url" placeholder="第三方系统登出回调 URL">
+                                </div>
 
-			<!-- Modal -->
-			<div class="modal fade" id="addApp" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addAppLabel" aria-hidden="true">
-				<div class="modal-dialog modal-dialog-centered">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h1 class="modal-title fs-5" id="addAppLabel">添加应用</h1>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
-						<div class="modal-body">
-							<form action="app/add" id="addAppForm" method="post" onsubmit="modifyApp(event, 'addApp', $(this))">
-								<div class="mb-3">
-									<label for="appImg" class="col-form-label">应用图片</label>
-									<input type="file" name="" class="form-control" id="appImg">
-									<label for="appImgUrl"></label>
-									<input type="text" name="app_img_url" class="form-control" id="appImgUrl" hidden>
-								</div>
-								<div class="mb-3">
-									<label for="app_name" class="col-form-label">应用名称</label>
-									<input type="text" autocomplete="off" required name="app_name" class="form-control" id="app_name">
-								</div>
-								<div class="mb-3">
-									<label for="request_url" class="col-form-label">请求路径</label>
-									<input type="text" autocomplete="off" required name="app_request_url" class="form-control" id="request_url">
-								</div>
-								<div class="mb-3">
-									<label for="redirect_url" class="col-form-label">跳转路径</label>
-									<input type="text" autocomplete="off" required name="app_redirect_url" class="form-control" id="redirect_url">
-								</div>
-								<input type="submit" id="addAppSubmit" hidden />
-							</form>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-							<button type="submit" class="btn btn-primary" onclick="clickSubmit('#addAppSubmit')">添加</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</caption>
-		<thead>
-		<tr>
-			<th style="width: 10%">应用图片</th>
-			<th style="width: 10%">应用名称</th>
-			<th style="width: 20%">请求路径</th>
-			<th style="width: 20%">跳转路径</th>
-			<th style="width: 40%">操作</th>
-		</tr>
-		</thead>
-		<tbody>
-		{foreach $apps as $index => $app}
-		<tr>
-			<td>
-				<img tabindex="0"
-					 src="{$app['image']}"
-					 data-bs-toggle="popover"
-					 data-bs-trigger="focus"
-					 data-bs-placement="top"
-					 id="show_app_img{$index}"
-					 style="max-height: 40px; max-width: 50px"
-					 class="img-thumbnail"
-					 alt="{$app['name']}" />
-			</td>
-			<td>{$app['name']}</td>
-			<td>{$app['request_url']}</td>
-			<td>{$app['redirect_url']}</td>
-			<td>
-				<div style="display: flex; align-items: center">
-					<div style="margin: 0 10px;">
-									<span type="button"
-										  class="btn btn-primary"
-										  onclick="visitApp(`{$app['request_url']}`, `{$app['redirect_url'] | base64_encode}`)">访问应用</span>
-					</div>
-					<div style="margin: 0 10px;">
-						<button type="button" class="btn btn-info" onclick="initModal('editApp{$app[\'id\']}', 'editAppImg{$app[\'id\']}', 'editAppImgUrl{$app[\'id\']}', '{$app | json_encode}')">编辑</button>
-						<!-- Modal -->
-						<div class="modal fade" id="editApp{$app['id']}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editAppLabel{$app['id']}" aria-hidden="true">
-							<div class="modal-dialog modal-dialog-centered">
-								<div class="modal-content">
-									<div class="modal-header">
-										<h1 class="modal-title fs-5" id="editAppLabel{$app['id']}">编辑应用</h1>
-										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-									</div>
-									<div class="modal-body">
-										<form action="app/update" id="editAppForm{$app['id']}" method="post" onsubmit="modifyApp(event, 'editApp{$app[\'id\']}', $(this), 'PUT', '{$app[\'id\']}')">
-											<div class="mb-3">
-												<label for="editAppImg{$app['id']}" class="col-form-label">应用图片</label>
-												<input type="file" name="" class="form-control" id="editAppImg{$app['id']}">
-												<label for="editAppImgUrl{$app['id']}"></label>
-												<input type="text" name="app_img_url" value="{$app['image']}" class="form-control" id="editAppImgUrl{$app['id']}" hidden>
-											</div>
-											<div class="mb-3">
-												<label for="editAppName{$app['id']}" class="col-form-label">应用名称</label>
-												<input type="text" autocomplete="off" value="{$app['name']}" required name="app_name" class="form-control" id="editAppName{$app['id']}">
-											</div>
-											<div class="mb-3">
-												<label for="editRequestUrl{$app['id']}" class="col-form-label">请求路径</label>
-												<input type="text" autocomplete="off" value="{$app['request_url']}" required name="app_request_url" class="form-control" id="editRequestUrl{$app['id']}">
-											</div>
-											<div class="mb-3">
-												<label for="editRedirectUrl{$app['id']}" class="col-form-label">跳转路径</label>
-												<input type="text" autocomplete="off" value="{$app['redirect_url']}" required name="app_redirect_url" class="form-control" id="editRedirectUrl{$app['id']}">
-											</div>
-											<input type="submit" id="editAppSubmit{$app['id']}" hidden />
-										</form>
-									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-										<button type="submit" class="btn btn-primary" onclick="clickSubmit('#editAppSubmit{$app[\'id\']}')">修改</button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div style="margin: 0 10px;">
-						<button type="button" class="btn btn-danger" onclick="deleteApp(`{$app['id']}`, `{$app['name']}`)">删除</button>
-					</div>
-					<div style="margin: 0 0 0 10px;">
-						<button type="button"
-								class="btn btn-warning"
-								onclick="downloadPublicToken(`{$app['public_key'] | base64_encode}`)">
-							下载公钥
-							<i class="bi bi-question-circle public_key_question"
-							   style="position: relative; top: 0;"
-							   data-bs-toggle="tooltip"
-							   data-bs-placement="bottom"
-							   data-bs-html="true"
-							   data-bs-title="<div>下载公钥，用于解token</div>"></i>
-						</button>
-					</div>
-				</div>
-			</td>
-		</tr>
-		{/foreach}
-		</tbody>
-	</table>
+                                <fieldset class="oauth-config-fieldset">
+                                    <legend>OAuth 配置</legend>
+                                    <div class="mb-3">
+                                        <label class="form-label">授权模式</label>
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input grant-type-cb" type="checkbox" value="authorization_code" checked>
+                                                <label class="form-check-label">授权码</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input grant-type-cb" type="checkbox" value="implicit">
+                                                <label class="form-check-label">隐式</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input grant-type-cb" type="checkbox" value="password">
+                                                <label class="form-check-label">密码</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input grant-type-cb" type="checkbox" value="client_credentials">
+                                                <label class="form-check-label">客户端凭证</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">授权范围</label>
+                                        <input type="text" name="scope" class="form-control" id="add_scope" value="trust">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Access Token 有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="add_access_ttl_num" value="8">
+                                                <select class="form-select form-select-sm" id="add_access_ttl_unit">
+                                                    <option value="60">分钟</option>
+                                                    <option value="3600" selected>小时</option>
+                                                    <option value="86400">天</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Refresh Token 有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="add_refresh_ttl_num" value="24">
+                                                <select class="form-select form-select-sm" id="add_refresh_ttl_unit">
+                                                    <option value="3600" selected>小时</option>
+                                                    <option value="86400">天</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">授权码有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="add_code_ttl_num" value="10">
+                                                <select class="form-select form-select-sm" id="add_code_ttl_unit">
+                                                    <option value="1" selected>分钟</option>
+                                                    <option value="60">小时</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="push-config-fieldset">
+                                    <legend>推送接口配置 <small class="text-muted">（可选，配置后将用户同步至第三方系统）</small></legend>
+                                    <div id="addPushConfigContainer"></div>
+                                </fieldset>
+
+                                <input type="submit" id="addAppSubmit" hidden />
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary" onclick="clickSubmit('#addAppSubmit')">添加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 添加成功后展示凭证的弹窗 -->
+            <div class="modal fade" id="addSuccess" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">应用已创建</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="credential-display">
+                                <div class="label">请保存以下凭证（APP_KEY 仅显示一次）</div>
+                                <div class="mb-2">
+                                    <small class="text-muted">APP_ID</small>
+                                    <div class="value" id="addSuccessClientId"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">APP_KEY</small>
+                                    <div class="value" id="addSuccessClientSecret"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-primary" onclick="downloadNewlyCreatedSecret()">下载凭证文件</button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.reload()">我已保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编辑应用弹窗（单例，动态填充） -->
+            <div class="modal fade" id="editApp" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5">编辑应用</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="app/update" id="editAppForm" method="post" onsubmit="modifyApp(event, 'editApp', $(this), 'PUT', currentEditId)">
+                                <div class="mb-3">
+                                    <label class="form-label">APP_ID</label>
+                                    <div class="app-id-display">
+                                        <span id="editAppIdValue"></span>
+                                        <button type="button" class="copy-btn" title="复制" data-clipboard-action="copy" data-clipboard-target="#editAppIdValue">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editAppImg" class="col-form-label">应用图片</label>
+                                    <input type="file" name="" class="form-control" id="editAppImg">
+                                    <label for="editAppImgUrl"></label>
+                                    <input type="text" name="app_img_url" class="form-control" id="editAppImgUrl" hidden>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editAppName" class="col-form-label">应用名称</label>
+                                    <input type="text" autocomplete="off" required name="app_name" class="form-control" id="editAppName">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editRequestUrl" class="col-form-label">请求路径</label>
+                                    <input type="text" autocomplete="off" required name="app_request_url" class="form-control" id="editRequestUrl">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editRedirectUrl" class="col-form-label">跳转路径</label>
+                                    <input type="text" autocomplete="off" required name="app_redirect_url" class="form-control" id="editRedirectUrl">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editLogoutCallbackUrl" class="col-form-label">登出回调地址 <small class="text-muted">（可选）</small></label>
+                                    <input type="text" autocomplete="off" name="app_logout_callback_url" class="form-control" id="editLogoutCallbackUrl" placeholder="第三方系统登出回调 URL">
+                                </div>
+
+                                <fieldset class="oauth-config-fieldset">
+                                    <legend>OAuth 配置</legend>
+                                    <div class="mb-3">
+                                        <label class="form-label">授权模式</label>
+                                        <div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input edit-grant-type-cb" type="checkbox" value="authorization_code">
+                                                <label class="form-check-label">授权码</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input edit-grant-type-cb" type="checkbox" value="implicit">
+                                                <label class="form-check-label">隐式</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input edit-grant-type-cb" type="checkbox" value="password">
+                                                <label class="form-check-label">密码</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input edit-grant-type-cb" type="checkbox" value="client_credentials">
+                                                <label class="form-check-label">客户端凭证</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">授权范围</label>
+                                        <input type="text" name="scope" class="form-control" id="edit_scope">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Access Token 有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="edit_access_ttl_num">
+                                                <select class="form-select form-select-sm" id="edit_access_ttl_unit">
+                                                    <option value="60">分钟</option>
+                                                    <option value="3600">小时</option>
+                                                    <option value="86400">天</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Refresh Token 有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="edit_refresh_ttl_num">
+                                                <select class="form-select form-select-sm" id="edit_refresh_ttl_unit">
+                                                    <option value="3600">小时</option>
+                                                    <option value="86400">天</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">授权码有效期</label>
+                                            <div class="ttl-input-group">
+                                                <input type="number" min="1" class="form-control form-control-sm" id="edit_code_ttl_num">
+                                                <select class="form-select form-select-sm" id="edit_code_ttl_unit">
+                                                    <option value="1">分钟</option>
+                                                    <option value="60">小时</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="push-config-fieldset">
+                                    <legend>推送接口配置 <small class="text-muted">（可选，配置后将用户同步至第三方系统）</small></legend>
+                                    <div id="editPushConfigContainer"></div>
+                                </fieldset>
+
+                                <input type="submit" id="editAppSubmit" hidden />
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary" onclick="clickSubmit('#editAppSubmit')">修改</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 应用详情弹窗（单例，动态填充） -->
+            <div class="modal fade" id="detailApp" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5">应用详情</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">APP_ID</label>
+                                <div class="app-id-display">
+                                    <span id="detailAppId"></span>
+                                    <button type="button" class="copy-btn" title="复制" data-clipboard-action="copy" data-clipboard-target="#detailAppId">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">APP_KEY</label>
+                                <div class="secret-display">
+                                    <span class="secret-value" id="detailSecretMask">••••••••••••••••</span>
+                                    <input type="text" class="form-control form-control-sm d-none" id="detailSecretPlain" readonly>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="detailSecretToggleBtn" onclick="toggleSecretVisibility()">查看</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyCurrentSecret()">复制</button>
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="resetAppSecret()">
+                                        <i class="bi bi-arrow-repeat"></i> 重置 APP_KEY
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success" onclick="downloadAppSecret(currentDetailId)">
+                                        <i class="bi bi-download"></i> 下载凭证文件
+                                    </button>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="mb-2"><strong>应用名称：</strong><span id="detailName"></span></div>
+                            <div class="mb-2"><strong>请求路径：</strong><span id="detailRequestUrl"></span></div>
+                            <div class="mb-2"><strong>跳转路径：</strong><span id="detailRedirectUrl"></span></div>
+                            <div class="mb-2"><strong>登出路径：</strong><span id="detailLogoutUrl"></span></div>
+                            <div class="mb-2"><strong>授权模式：</strong><span id="detailGrantBadges"></span></div>
+                            <div class="mb-2"><strong>授权范围：</strong><span id="detailScope"></span></div>
+                            <div class="mb-2"><strong>Access Token 有效期：</strong><span id="detailAccessTTL"></span></div>
+                            <div class="mb-2"><strong>Refresh Token 有效期：</strong><span id="detailRefreshTTL"></span></div>
+                            <div class="mb-2"><strong>授权码有效期：</strong><span id="detailCodeTTL"></span></div>
+                            <hr />
+                            <div class="mb-2"><strong>推送接口配置：</strong></div>
+                            <div id="detailPushConfigArea"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </caption>
+        <thead>
+        <tr>
+            <th style="width: 8%">图标</th>
+            <th style="width: 22%">APP_ID</th>
+            <th style="width: 15%">应用名称</th>
+            <th style="width: 20%">授权模式</th>
+            <th style="width: 15%">回调路径</th>
+            <th style="width: 20%">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $apps as $index => $app}
+        <tr>
+            <td>
+                <img tabindex="0"
+                     src="{$app['image']}"
+                     data-bs-toggle="popover"
+                     data-bs-trigger="focus"
+                     data-bs-placement="top"
+                     id="show_app_img{$index}"
+                     style="max-height: 40px; max-width: 50px"
+                     class="img-thumbnail"
+                     alt="{$app['name']}" />
+            </td>
+            <td>
+                {if empty($app['client_id'])}
+                <span class="client-id-click unconfigured">未配置</span>
+                {else}
+                <span class="client-id-click copy-btn" data-bs-title="点击复制" data-bs-toggle="tooltip" data-bs-placement="top" data-clipboard-action="copy" data-clipboard-target="#{$app['client_id']}" id="{$app['client_id']}">{$app['client_id']}</span>
+                {/if}
+            </td>
+            <td>{$app['name']}</td>
+            <td><span class="grant-badges" data-grants="{$app['allowed_grant_types']}"></span></td>
+            <td style="font-size: 12px;">{$app['redirect_url']}</td>
+            <td>
+                <div class="op-buttons">
+                    <button type="button" class="btn btn-primary" onclick="showAppDetail({$app['id']})">详情</button>
+                    <button type="button" class="btn btn-info" onclick="openEditModal({$app['id']})">编辑</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteApp(`{$app['id']}`, `{$app['name']}`)">删除</button>
+                    <button type="button" class="btn btn-success" onclick="visitApp({$app['id']})" title="以 OAuth 授权码模式访问应用">
+                        <i class="bi bi-box-arrow-up-right"></i> 访问应用
+                    </button>
+                </div>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
 </div>
 {/block}
 {block name="script"}
 <script src="/assets/js/image-upload.js"></script>
 <script>
-	let modals = {};
-	let token = '';
-	function downloadPublicToken(filename) {
-		window.open('app/download?_f=' + filename, 'blank')
-	}
-	function visitApp(request_url, redirect_url) {
-		window.open(request_url + '?redirect_url=' + redirect_url + '&sso_token=' + token)
-	}
-	function checkToken() {
-		token = window.localStorage.getItem('token');
-		if (!token) {
-			messageEx('登录失效', 'error', 500);
-			window.location.href = 'login.html';
-		}
-	}
-	function clickSubmit(id) {
-		$(id).click();
-	}
+    let modals = {};
+    let token = '';
+    let currentEditId = null;
+    let currentDetailId = null;
+    let currentDetailSecret = null;   // 仅在 toggleSecretVisibility 确认后填充
+    let currentDetailSecretVisible = false;
+    let newlyCreatedSiteId = null;
 
-	function initModal(modal_id, img_id, img_url_id, app=null) {
-		if (modals[modal_id] === undefined) {
-			modals[modal_id] = new bootstrap.Modal('#' + modal_id, {
-				keyboard: false,
-			});
-		}
-		modals[modal_id].show();
-		// $('#' + modal_id).show();
-		// 文件上传
-		let file_input = new FileInput();
-		file_input.Init(img_id, '/app/upload_image', '/app/delete_uploaded_image', img_url_id, app, token);
-	}
+    const GRANT_TYPE_LABELS = {
+        authorization_code: '授权码',
+        implicit: '隐式',
+        password: '密码',
+        client_credentials: '客户端凭证'
+    };
 
-	/**
-	 * 添加或更新应用
-	 * @param event
-	 * @param modal_id
-	 * @param form
-	 * @param method
-	 * @param app_id
-	 */
-	function modifyApp(event, modal_id, form, method = 'POST', app_id = null) {
-		event.preventDefault();
-		let form_data = new FormData(event.target);
-		let send_data = {
-			app_name: form_data.get('app_name'),
-			app_request_url: form_data.get('app_request_url'),
-			app_redirect_url: form_data.get('app_redirect_url'),
-			app_img_url: form_data.get('app_img_url'),
-			id: app_id,
-		};
-		$.ajax({
-			type: method,
-			contentType: 'application/json;charset=UTF-8',
-			headers: {
-				Authorization: token,
-			},
-			url: form.attr('action'),
-			data: JSON.stringify(send_data),
-			success: (data) => {
-				if (data.code === 0) {
-					modals[modal_id].hide();
-					messageEx(method === 'POST' ? '添加成功' : '修改成功', 'success', 800);
-					setTimeout(function () {
-						window.location.reload();
-					}, 1000);
-				} else {
-					messageEx(data.result);
-				}
-			},
-			error: (error) => {
-				console.error(error);
-			}
-		})
-	}
+    /**
+     * 校验 token 并初始化全局 token 变量
+     * 登录时 localStorage 存储的是 btoa(jwt_string)，需 atob 解码还原为原始 JWT
+     * 兼容：
+     *   - 若已经是原始 JWT（三段 base64url 以 '.' 分隔），直接使用
+     *   - 若是 base64 包裹的 JWT，atob 解码后使用
+     *   - 若解码失败，使用原值（兜底）
+     */
+    function checkToken() {
+        let stored = window.localStorage.getItem('token');
+        if (!stored) {
+            messageEx('登录失效', 'error', 500);
+            window.location.href = 'login.html';
+            return;
+        }
+        // 原始 JWT 形如 xxx.yyy.zzz（三段 base64url 以 '.' 分隔）
+        if (/^[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+$/.test(stored)) {
+            token = stored;
+        } else {
+            try {
+                token = atob(stored);
+            } catch (e) {
+                token = stored;
+            }
+        }
+        if (!token) {
+            messageEx('登录失效', 'error', 500);
+            window.location.href = 'login.html';
+        }
+    }
 
-	function deleteApp(app_id, app_name) {
-		confirmEx({
-			title: "删除应用",
-			message: "是否删除应用" + app_name,
-			callback: (result) => {
-				if (!result) {
-					return;
-				}
-				$.ajax({
-					type: 'DELETE',
-					contentType: 'application/json;charset=UTF-8',
-					headers: {
-						Authorization: token,
-					},
-					url: 'app/delete',
-					data: JSON.stringify({id: app_id}),
-					success: (data) => {
-						if (data.code === 0) {
-							messageEx('删除成功', 'success', 800);
-							setTimeout(function () {
-								window.location.reload();
-							}, 1000);
-						} else{
-							messageEx(data.result, 'danger', 500);
-						}
-					},
-					error: (error) => {
-						console.error(error);
-					}
-				})
-			}
-		})
-	}
+    function clickSubmit(id) {
+        $(id).click();
+    }
 
-	function init() {
-		checkToken();
-		activeNav('#nav-index');
-		$(function () {
-			// 缩略图弹出框
-			for (let i = 0; i < parseInt('{$apps|count}'); i++) {
-				let img_node = $('#show_app_img' + i);
-				img_node.popover({
-					animation: true,
-					html: true,
-					container: 'body',
-					content: "<img src='" + img_node.attr('src') + "' alt='" + img_node.attr('alt') + "' width='400px' />"
-				});
-			}
+    /**
+     * 初始化模态框（目前仅用于添加弹窗；编辑/详情走独立流程）
+     */
+    function initModal(modal_id, img_id, img_url_id) {
+        if (modals[modal_id] === undefined) {
+            modals[modal_id] = new bootstrap.Modal('#' + modal_id, { keyboard: false });
+        }
+        modals[modal_id].show();
+        let file_input = new FileInput();
+        file_input.Init('', img_id, '/app/upload_image', '/app/delete_uploaded_image', img_url_id, null, token);
+        // T4.1 初始化空推送配置面板
+        renderPushApiPanels('addPushConfigContainer', 'add', []);
+    }
 
-			// 公钥的问号
-			$('.public_key_question').tooltip();
-		});
-	}
+    /**
+     * 收集表单中 OAuth 配置字段（授权模式 / scope / 各 token 有效期）
+     * @param {jQuery} form 表单元素
+     * @param {string} grantCbSelector 授权模式复选框选择器
+     * @param {string} prefix 字段 id 前缀（add / edit）
+     * @return {object} 收集到的 OAuth 字段
+     */
+    function collectOauthConfig(form, grantCbSelector, prefix) {
+        let grantTypes = [];
+        $(grantCbSelector).each(function () {
+            if ($(this).is(':checked')) {
+                grantTypes.push($(this).val());
+            }
+        });
+        let access_num = parseInt($('#' + prefix + '_access_ttl_num').val()) || 0;
+        let access_unit = parseInt($('#' + prefix + '_access_ttl_unit').val()) || 1;
+        let refresh_num = parseInt($('#' + prefix + '_refresh_ttl_num').val()) || 0;
+        let refresh_unit = parseInt($('#' + prefix + '_refresh_ttl_unit').val()) || 1;
+        let code_num = parseInt($('#' + prefix + '_code_ttl_num').val()) || 0;
+        let code_unit = parseInt($('#' + prefix + '_code_ttl_unit').val()) || 1;
+        return {
+            allowed_grant_types: grantTypes.join(','),
+            scope: $('#' + prefix + '_scope').val() || '',
+            access_token_ttl: access_num * access_unit,
+            refresh_token_ttl: refresh_num * refresh_unit,
+            code_ttl: code_num * code_unit
+        };
+    }
 
-	init();
+    /**
+     * 添加或更新应用
+     */
+    function modifyApp(event, modal_id, form, method = 'post', app_id = '') {
+        event.preventDefault();
+        let isEdit = (method === 'PUT');
+        let prefix = isEdit ? 'edit' : 'add';
+        let grantCb = isEdit ? '.edit-grant-type-cb' : '.grant-type-cb';
+        let oauth = collectOauthConfig(form, grantCb, prefix);
+        let form_data = new FormData(event.target);
+
+        // T5.7 收集推送接口配置（包含 appid/appkey）
+        let pushConfig;
+        try {
+            pushConfig = collectPushApis(prefix);
+        } catch (e) {
+            messageEx(e.message, 'danger', 800);
+            return;
+        }
+
+        let send_data = {
+            app_name: form_data.get('app_name'),
+            app_request_url: form_data.get('app_request_url'),
+            app_redirect_url: form_data.get('app_redirect_url'),
+            app_logout_callback_url: form_data.get('app_logout_callback_url'),
+            app_img_url: form_data.get('app_img_url'),
+            id: app_id,
+            allowed_grant_types: oauth.allowed_grant_types,
+            scope: oauth.scope,
+            access_token_ttl: oauth.access_token_ttl,
+            refresh_token_ttl: oauth.refresh_token_ttl,
+            code_ttl: oauth.code_ttl,
+            push_apis: pushConfig.pushApis
+        };
+        $.ajax({
+            type: method,
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: token },
+            url: form.attr('action'),
+            data: JSON.stringify(send_data),
+            success: (data) => {
+                if (data.code === 0) {
+                    modals[modal_id].hide();
+                    messageEx(isEdit ? '修改成功' : '添加成功', 'success', 800);
+                    if (isEdit) {
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 1500);
+                        return;
+                    }
+                    if (!isEdit && data.result && data.result.client_id) {
+                        // 展示凭证弹窗
+                        newlyCreatedSiteId = data.result.id;
+                        $('#addSuccessClientId').text(data.result.client_id);
+                        $('#addSuccessClientSecret').text(data.result.client_secret);
+                        if (modals['addSuccess'] === undefined) {
+                            modals['addSuccess'] = new bootstrap.Modal('#addSuccess');
+                        }
+                        modals['addSuccess'].show();
+                    }
+                } else {
+                    messageEx(data.result || data.message, 'danger', 800);
+                }
+            },
+            error: (error) => {
+                console.error(error);
+                messageEx('请求失败', 'danger', 800);
+            }
+        });
+    }
+
+    function deleteApp(app_id, app_name) {
+        confirmEx({
+            title: "删除应用",
+            message: "是否删除应用" + app_name,
+            callback: (result) => {
+                if (!result) return;
+                $.ajax({
+                    type: 'DELETE',
+                    contentType: 'application/json;charset=UTF-8',
+                    headers: { Authorization: token },
+                    url: 'app/delete',
+                    data: JSON.stringify({ id: app_id }),
+                    success: (data) => {
+                        if (data.code === 0) {
+                            messageEx('删除成功', 'success', 800);
+                            setTimeout(function () { window.location.reload(); }, 1000);
+                        } else {
+                            messageEx(data.result, 'danger', 500);
+                        }
+                    },
+                    error: (error) => { console.error(error); }
+                });
+            }
+        });
+    }
+
+    /**
+     * 打开编辑弹窗：从后端拉取应用详情，预填充表单
+     */
+    function openEditModal(app_id) {
+        $.ajax({
+            type: 'GET',
+            headers: { Authorization: token },
+            url: 'app/detail',
+            data: { id: app_id },
+            success: (data) => {
+                if (data.code !== 0) {
+                    messageEx(data.result || '加载失败', 'danger', 800);
+                    return;
+                }
+                let app = data.result;
+                currentEditId = app.id;
+                $('#editAppIdValue').text(app.client_id || '未配置');
+                $('#editAppName').val(app.name);
+                $('#editRequestUrl').val(app.request_url);
+                $('#editRedirectUrl').val(app.redirect_url);
+                console.log(app);
+                $('#editLogoutCallbackUrl').val(app.logout_callback_url || '');
+                $('#editAppImgUrl').val(app.image || '');
+                $('#edit_scope').val(app.scope || 'trust');
+
+                // 预填授权模式复选框
+                let allowedTypes = (app.allowed_grant_types || '').split(',').map(s => s.trim()).filter(Boolean);
+                $('.edit-grant-type-cb').each(function () {
+                    $(this).prop('checked', allowedTypes.indexOf($(this).val()) !== -1);
+                });
+
+                // 预填各 token 有效期（秒数拆分到 num + unit）
+                fillTtlFields('edit', app.access_token_ttl, [60, 3600, 86400], 'access');
+                fillTtlFields('edit', app.refresh_token_ttl, [3600, 86400], 'refresh');
+                fillTtlFields('edit', app.code_ttl, [1, 60], 'code');
+
+                if (modals['editApp'] === undefined) {
+                    modals['editApp'] = new bootstrap.Modal('#editApp', { keyboard: false });
+                }
+                modals['editApp'].show();
+                let file_input = new FileInput();
+                file_input.Init(currentEditId, 'editAppImg', '/app/upload_image', '/app/delete_uploaded_image', 'editAppImgUrl', JSON.stringify(app), token);
+
+                // T5.5 加载推送接口配置并回填（含 appid/appkey 状态）
+                $.ajax({
+                    type: 'GET',
+                    headers: { Authorization: token },
+                    url: 'app/push_apis',
+                    data: { site_id: app_id },
+                    success: function (pushData) {
+                        let pushApis = (pushData.code === 0 && Array.isArray(pushData.result)) ? pushData.result : [];
+                        renderPushApiPanels('editPushConfigContainer', 'edit', pushApis);
+                    },
+                    error: function () {
+                        renderPushApiPanels('editPushConfigContainer', 'edit', []);
+                    }
+                });
+            },
+            error: (error) => { console.error(error); }
+        });
+    }
+
+    /**
+     * 为 num + unit 输入框预填秒数（选择最大可整除单位）
+     */
+    function fillTtlFields(prefix, totalSeconds, unitOptions, kind) {
+        let chosenUnit = unitOptions[0];
+        let chosenNum = totalSeconds || 0;
+        for (let i = unitOptions.length - 1; i >= 0; i--) {
+            let u = unitOptions[i];
+            if (totalSeconds > 0 && totalSeconds % u === 0) {
+                chosenUnit = u;
+                chosenNum = totalSeconds / u;
+                break;
+            }
+        }
+        $('#' + prefix + '_' + kind + '_ttl_num').val(chosenNum);
+        $('#' + prefix + '_' + kind + '_ttl_unit').val(String(chosenUnit));
+    }
+
+    /**
+     * 渲染授权模式标签
+     */
+    function renderGrantTypeBadges(container, grantsCsv) {
+        let types = (grantsCsv || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (types.length === 0) {
+            container.html('<span class="grant-type-badge unconfigured">未配置</span>');
+            return;
+        }
+        let html = types.map(function (t) {
+            let label = GRANT_TYPE_LABELS[t] || t;
+            return '<span class="grant-type-badge ' + t + '">' + label + '</span>';
+        }).join('');
+        container.html(html);
+    }
+
+    /**
+     * 打开详情弹窗
+     */
+    function showAppDetail(app_id) {
+        $.ajax({
+            type: 'GET',
+            headers: { Authorization: token },
+            url: 'app/detail',
+            data: { id: app_id },
+            success: (data) => {
+                if (data.code !== 0) {
+                    messageEx(data.result || '加载失败', 'danger', 800);
+                    return;
+                }
+                let app = data.result;
+                currentDetailId = app.id;
+                currentDetailSecret = null;
+                currentDetailSecretVisible = false;
+                $('#detailAppId').text(app.client_id || '未配置');
+                $('#detailName').text(app.name);
+                $('#detailRequestUrl').text(app.request_url);
+                $('#detailRedirectUrl').text(app.redirect_url);
+                $('#detailLogoutUrl').text(app.logout_callback_url);
+                $('#detailScope').text(app.scope || '未设置');
+                $('#detailAccessTTL').text(formatTTL(app.access_token_ttl));
+                $('#detailRefreshTTL').text(formatTTL(app.refresh_token_ttl));
+                $('#detailCodeTTL').text(formatTTL(app.code_ttl));
+                renderGrantTypeBadges($('#detailGrantBadges'), app.allowed_grant_types);
+
+                // 重置 APP_KEY 展示状态
+                $('#detailSecretMask').text('••••••••••••••••').removeClass('d-none');
+                $('#detailSecretPlain').val('').addClass('d-none');
+                $('#detailSecretToggleBtn').text('查看');
+
+                if (modals['detailApp'] === undefined) {
+                    modals['detailApp'] = new bootstrap.Modal('#detailApp', { keyboard: false });
+                }
+                modals['detailApp'].show();
+
+                // T4.4 加载推送接口配置（只读展示）
+                $.ajax({
+                    type: 'GET',
+                    headers: { Authorization: token },
+                    url: 'app/push_apis',
+                    data: { site_id: app_id },
+                    success: function (pushData) {
+                        let pushApis = (pushData.code === 0 && Array.isArray(pushData.result)) ? pushData.result : [];
+                        renderDetailPushConfig(pushApis);
+                    },
+                    error: function () {
+                        renderDetailPushConfig([]);
+                    }
+                });
+            },
+            error: (error) => { console.error(error); }
+        });
+    }
+
+    function formatTTL(seconds) {
+        if (!seconds) return '未设置';
+        if (seconds >= 86400 && seconds % 86400 === 0) return (seconds / 86400) + ' 天';
+        if (seconds >= 3600 && seconds % 3600 === 0) return (seconds / 3600) + ' 小时';
+        if (seconds >= 60 && seconds % 60 === 0) return (seconds / 60) + ' 分钟';
+        return seconds + ' 秒';
+    }
+
+    function copyToClipboard(text) {
+        if (!text) { messageEx('无内容', 'warning', 500); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+                messageEx('已复制到剪贴板', 'success', 500);
+            }).catch(function () {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        let ta = $('<textarea>').val(text).appendTo('body').css({ position: 'fixed', opacity: 0 });
+        ta[0].select();
+        try {
+            document.execCommand('copy');
+            messageEx('已复制到剪贴板', 'success', 500);
+        } catch (e) {
+            messageEx('复制失败', 'danger', 500);
+        }
+        ta.remove();
+    }
+
+    /**
+     * 切换详情弹窗中 APP_KEY 的可见性
+     */
+    function toggleSecretVisibility() {
+        if (currentDetailSecretVisible) {
+            // 隐藏
+            $('#detailSecretPlain').addClass('d-none').val('');
+            $('#detailSecretMask').removeClass('d-none').text('••••••••••••••••');
+            $('#detailSecretToggleBtn').text('查看');
+            currentDetailSecretVisible = false;
+            return;
+        }
+        // 显示前需确认
+        confirmEx({
+            title: '查看 APP_KEY',
+            message: '确认查看 APP_KEY？请确保周围环境安全',
+            callback: (result) => {
+                if (!result) return;
+                if (currentDetailSecret) {
+                    revealSecret();
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json;charset=UTF-8',
+                    headers: { Authorization: token },
+                    url: 'app/get_secret',
+                    data: JSON.stringify({ id: currentDetailId }),
+                    success: (data) => {
+                        if (data.code === 0) {
+                            currentDetailSecret = data.result.client_secret;
+                            revealSecret();
+                        } else {
+                            messageEx(data.result || '获取失败', 'danger', 800);
+                        }
+                    },
+                    error: () => { messageEx('请求失败', 'danger', 800); }
+                });
+            }
+        });
+    }
+
+    function revealSecret() {
+        $('#detailSecretMask').addClass('d-none');
+        $('#detailSecretPlain').val(currentDetailSecret).removeClass('d-none');
+        $('#detailSecretToggleBtn').text('隐藏');
+        currentDetailSecretVisible = true;
+    }
+
+    function copyCurrentSecret() {
+        if (currentDetailSecret) {
+            copyToClipboard(currentDetailSecret);
+        } else {
+            messageEx('请先查看 APP_KEY', 'warning', 500);
+        }
+    }
+
+    /**
+     * 重置 APP_KEY：二次确认 → 调用接口 → 更新展示
+     */
+    function resetAppSecret() {
+        if (!currentDetailId) return;
+        confirmEx({
+            title: '重置 APP_KEY',
+            message: '重置后旧的 APP_KEY 将立即失效，确认继续？',
+            callback: (result) => {
+                if (!result) return;
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json;charset=UTF-8',
+                    headers: { Authorization: token },
+                    url: 'app/reset_secret',
+                    data: JSON.stringify({ id: currentDetailId }),
+                    success: (data) => {
+                        if (data.code === 0) {
+                            currentDetailSecret = data.result.client_secret;
+                            revealSecret();
+                            messageEx('APP_KEY 已重置', 'success', 800);
+                        } else {
+                            messageEx(data.result || '重置失败', 'danger', 800);
+                        }
+                    },
+                    error: () => { messageEx('请求失败', 'danger', 800); }
+                });
+            }
+        });
+    }
+
+    /**
+     * 下载凭证文件：通过 fetch POST 下载 blob
+     */
+    function downloadAppSecret(app_id) {
+        fetch('app/download_secret', {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: app_id })
+        }).then(function (resp) {
+            if (!resp.ok) {
+                return resp.text().then(function (t) { throw new Error(t); });
+            }
+            let disposition = resp.headers.get('Content-Disposition') || '';
+            let filename = 'oauth_credentials.txt';
+            let starMatch = /filename\*=UTF-8''([^;]+)/.exec(disposition);
+            let plainMatch = /filename="([^"]+)"/.exec(disposition);
+            if (starMatch) {
+                filename = decodeURIComponent(starMatch[1]);
+            } else if (plainMatch) {
+                filename = plainMatch[1];
+            }
+            return resp.blob().then(function (blob) {
+                let url = URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }).catch(function (err) {
+            console.error(err);
+            messageEx('下载失败', 'danger', 800);
+        });
+    }
+
+    /**
+     * 下载刚刚创建的应用的凭证文件
+     */
+    function downloadNewlyCreatedSecret() {
+        if (newlyCreatedSiteId) {
+            downloadAppSecret(newlyCreatedSiteId);
+        }
+    }
+
+    /**
+     * 访问应用：调用后端生成授权码，拼接回调 URL 后打开新标签页
+     */
+    function visitApp(app_id) {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json;charset=UTF-8',
+            headers: { Authorization: token },
+            url: '/app/visit',
+            data: JSON.stringify({ id: app_id }),
+            success: function (data) {
+                if (data.code === 0 && data.result) {
+                    let url = data.result.redirect_uri
+                        + '?code=' + encodeURIComponent(data.result.code)
+                        + '&state=' + encodeURIComponent(data.result.state);
+                    window.open(url, '_blank');
+                } else {
+                    messageEx(data.result || data.message || '获取授权码失败', 'danger', 800);
+                }
+            },
+            error: function () {
+                messageEx('请求失败', 'danger', 800);
+            }
+        });
+    }
+
+    // ========== 推送接口配置（T5.1 - T5.7 增强版）==========
+
+    const PUSH_ACTION_LABELS = {
+        create: '新增用户接口',
+        update: '修改用户接口',
+        delete: '删除用户接口'
+    };
+    const PUSH_ACTIONS = ['create', 'update', 'delete'];
+
+    /** 默认 SCIM 请求体参数（create/update 时预设） */
+    const DEFAULT_BODY_PARAMS = [
+        { name: 'code', value: '{{username}}', type: 'string', required: true },
+        { name: 'name', value: '{{username}}', type: 'string', required: true },
+        { name: 'externalId', value: '{{user_id}}', type: 'string', required: false },
+        { name: 'email', value: '{{email}}', type: 'string', required: false },
+        { name: 'mobile', value: '', type: 'string', required: false },
+        { name: 'status', value: '{{status}}', type: 'int', required: false }
+    ];
+
+    /** 默认响应验证规则 */
+    const DEFAULT_RESPONSE_RULES = [
+        { field: 'success', type: 'boolean', value: 'true' },
+        { field: 'code', type: 'int', value: '200' }
+    ];
+
+    /**
+     * 渲染动态表头行
+     */
+    function buildDynamicTableHeader(columns) {
+        let html = '<tr>';
+        columns.forEach(function (col) {
+            html += '<th>' + col.label + '</th>';
+        });
+        html += '<th style="width:30px"></th></tr>';
+        return html;
+    }
+
+    /**
+     * 添加一行到动态表格
+     */
+    function addDynamicRow(tableSelector, columns, values) {
+        let row = '<tr>';
+        columns.forEach(function (col) {
+            row += '<td>' + buildDynamicCell(col, values[col.key] || col.defaultVal || '') + '</td>';
+        });
+        row += '<td><button type="button" class="btn btn-outline-danger btn-remove-row" onclick="$(this).closest(\'tr\').remove()"><i class="bi bi-x"></i></button></td>';
+        row += '</tr>';
+        $(tableSelector).append(row);
+    }
+
+    /**
+     * 构建单个单元格
+     */
+    function buildDynamicCell(col, value) {
+        let v = escapeAttr(value);
+        switch (col.type) {
+            case 'select':
+                let options = (col.options || []).map(function (opt) {
+                    return '<option value="' + opt + '"' + (value === opt ? ' selected' : '') + '>' + opt + '</option>';
+                }).join('');
+                return '<select class="form-select form-select-sm ' + col.cssClass + '">' + options + '</select>';
+            case 'checkbox':
+                return '<input type="checkbox" class="form-check-input ' + col.cssClass + '"' + (value ? ' checked' : '') + '>';
+            default:
+                return '<input type="text" class="form-control form-control-sm ' + col.cssClass + '" value="' + v + '" placeholder="' + escapeAttr(col.placeholder || '') + '">';
+        }
+    }
+
+    /**
+     * 列定义
+     */
+    const HEADER_COLUMNS = [
+        { key: 'name', label: 'Header 名称', cssClass: 'hdr_name', placeholder: 'X-Custom-Header' },
+        { key: 'value', label: 'Header 值', cssClass: 'hdr_value', placeholder: 'value' }
+    ];
+
+    const BODY_COLUMNS = [
+        { key: 'name', label: '参数名', cssClass: 'body_name', placeholder: 'fieldName' },
+        { key: 'value', label: '值 / 变量', cssClass: 'body_value', placeholder: '{{username}}' },
+        { key: 'type', label: '类型', cssClass: 'body_type', type: 'select', options: ['string', 'int', 'boolean'] },
+        { key: 'required', label: '必填', cssClass: 'body_required', type: 'checkbox' }
+    ];
+
+    const RULE_COLUMNS = [
+        { key: 'field', label: '字段路径', cssClass: 'rule_field', placeholder: 'success / data.code' },
+        { key: 'type', label: '类型', cssClass: 'rule_type', type: 'select', options: ['string', 'int', 'boolean'] },
+        { key: 'value', label: '期望值', cssClass: 'rule_value', placeholder: '200' }
+    ];
+
+    /**
+     * 渲染推送接口配置面板（3 个折叠子面板：create / update / delete）
+     *
+     * @param {string} containerId 容器 DOM id
+     * @param {string} prefix 字段 id 前缀（add / edit）
+     * @param {Array} existingApis 已有配置数组（编辑时传入）
+     */
+    function renderPushApiPanels(containerId, prefix, existingApis) {
+        let container = document.getElementById(containerId);
+        if (!container) return;
+        let apiMap = {};
+        (existingApis || []).forEach(function (api) {
+            apiMap[api.action] = api;
+        });
+        let html = '';
+        PUSH_ACTIONS.forEach(function (action) {
+            let api = apiMap[action] || {};
+            let hasConfig = !!api.url;
+            let panelId = prefix + '_push_' + action;
+            let collapseId = panelId + '_collapse';
+            let headerClass = hasConfig ? '' : ' collapsed';
+            let badgeClass = hasConfig ? 'bg-success' : 'bg-secondary';
+            let badgeText = hasConfig ? '已配置' : '未配置';
+
+            let headers = Array.isArray(api.extra_headers) ? api.extra_headers : [];
+            let bodyParams = Array.isArray(api.body_params) ? api.body_params : DEFAULT_BODY_PARAMS;
+            let rules = Array.isArray(api.response_rules) ? api.response_rules : DEFAULT_BODY_PARAMS;
+
+            html += '<div class="push-api-panel">'
+                + '<div class="push-api-header' + headerClass + '" data-bs-toggle="collapse" data-bs-target="#' + collapseId + '" aria-expanded="' + (hasConfig ? 'true' : 'false') + '">'
+                + '<span class="push-api-title">' + PUSH_ACTION_LABELS[action] + '</span>'
+                + '<span class="push-api-badge badge ' + badgeClass + '">' + badgeText + '</span>'
+                + '</div>'
+                + '<div class="collapse' + (hasConfig ? ' show' : '') + '" id="' + collapseId + '">'
+                + '<div class="push-api-body">';
+
+            // URL + Method
+            html += '<div class="row"><div class="col-md-8">'
+                + '<label class="form-label">接口地址 <span class="text-danger">*</span></label>'
+                + '<input type="url" class="form-control form-control-sm ' + panelId + '_url" placeholder="https://example.com/api/scim/v2/accounts" value="' + escapeAttr(api.url || '') + '">'
+                + '</div><div class="col-md-4">'
+                + '<label class="form-label">请求方法</label>'
+                + '<select class="form-select form-select-sm ' + panelId + '_method">';
+            ['POST', 'PUT', 'DELETE', 'PATCH'].forEach(function (m) {
+                html += '<option value="' + m + '"' + ((api.method || 'POST') === m ? ' selected' : '') + '>' + m + '</option>';
+            });
+            html += '</select></div></div>';
+
+            // 动态请求头
+            html += '<div class="push-section-label"><span><i class="bi bi-list-ul"></i> 自定义请求头</span>'
+                + '<button type="button" class="btn btn-outline-primary btn-add-row" onclick="addDynamicRow(\'#' + panelId + '_headers_tbl\', HEADER_COLUMNS, {})"><i class="bi bi-plus"></i> 添加</button></div>'
+                + '<table class="push-dynamic-table" id="' + panelId + '_headers_tbl">'
+                + buildDynamicTableHeader(HEADER_COLUMNS)
+                + '</table>';
+
+            // 动态请求体参数（仅 create/update 显示）
+            html += '<div class="push-section-label"><span><i class="bi bi-body-text"></i> 请求体参数</span>'
+                + '<button type="button" class="btn btn-outline-primary btn-add-row" onclick="addDynamicRow(\'#' + panelId + '_body_tbl\', BODY_COLUMNS, {})"><i class="bi bi-plus"></i> 添加</button></div>'
+                + '<table class="push-dynamic-table" id="' + panelId + '_body_tbl">'
+                + buildDynamicTableHeader(BODY_COLUMNS)
+                + '</table>';
+
+            // 动态响应验证规则（仅 create/update 显示）
+            html += '<div class="push-section-label"><span><i class="bi bi-check2-square"></i> 响应验证规则（全部满足）</span>'
+                + '<button type="button" class="btn btn-outline-primary btn-add-row" onclick="addDynamicRow(\'#' + panelId + '_rules_tbl\', RULE_COLUMNS, {type:\'string\'})"><i class="bi bi-plus"></i> 添加</button></div>'
+                + '<table class="push-dynamic-table" id="' + panelId + '_rules_tbl">'
+                + buildDynamicTableHeader(RULE_COLUMNS)
+                + '</table>';
+
+            // 超时 + 启用
+            html += '<div class="row mt-2"><div class="col-md-6">'
+                + '<label class="form-label">超时(秒)</label>'
+                + '<input type="number" min="1" max="120" class="form-control form-control-sm ' + panelId + '_timeout" value="' + (api.timeout || 10) + '">'
+                + '</div><div class="col-md-6 d-flex align-items-end">'
+                + '<div class="form-check mb-2">'
+                + '<input class="form-check-input ' + panelId + '_enabled" type="checkbox"' + (api.is_enabled !== false ? ' checked' : '') + ' id="' + panelId + '_enabled_cb">'
+                + '<label class="form-check-label" for="' + panelId + '_enabled_cb">启用</label>'
+                + '</div></div></div>';
+
+            html += '</div></div></div>';
+        });
+        container.innerHTML = html;
+
+        // 填充已有数据行
+        PUSH_ACTIONS.forEach(function (action) {
+            let api = apiMap[action] || {};
+            let panelId = prefix + '_push_' + action;
+            let headers = Array.isArray(api.extra_headers) ? api.extra_headers : [];
+            let bodyParams = Array.isArray(api.body_params) ? api.body_params : DEFAULT_BODY_PARAMS;
+            let rules = Array.isArray(api.response_rules) ? api.response_rules : DEFAULT_RESPONSE_RULES;
+
+            headers.forEach(function (h) { addDynamicRow('#' + panelId + '_headers_tbl', HEADER_COLUMNS, h); });
+            bodyParams.forEach(function (p) { addDynamicRow('#' + panelId + '_body_tbl', BODY_COLUMNS, p); });
+            rules.forEach(function (r) { addDynamicRow('#' + panelId + '_rules_tbl', RULE_COLUMNS, r); });
+        });
+    }
+
+    /**
+     * HTML 属性转义
+     */
+    function escapeAttr(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /**
+     * 从动态表格中收集行数据
+     */
+    function collectTableRows(tableSelector, columns) {
+        let rows = [];
+        $(tableSelector).find('tr').each(function () {
+            let tr = $(this);
+            if (tr.find('th').length > 0) return; // 跳过表头
+            let row = {};
+            let valid = false;
+            columns.forEach(function (col) {
+                let cell = tr.find('.' + col.cssClass);
+                if (col.type === 'checkbox') {
+                    row[col.key] = cell.is(':checked');
+                } else if (col.type === 'select') {
+                    row[col.key] = cell.val() || '';
+                } else {
+                    row[col.key] = (cell.val() || '').trim();
+                }
+                if (row[col.key] !== '' && row[col.key] !== false) valid = true;
+            });
+            if (valid) rows.push(row);
+        });
+        return rows;
+    }
+
+    /**
+     * 从面板中收集推送接口配置
+     *
+     * @param {string} prefix add / edit
+     * @return {object} { pushApis: [...] }
+     */
+    function collectPushApis(prefix) {
+        let apis = [];
+        PUSH_ACTIONS.forEach(function (action) {
+            let panelId = prefix + '_push_' + action;
+            let url = $('.' + panelId + '_url').val();
+            if (!url || !url.trim()) return;
+
+            let extraHeaders = collectTableRows('#' + panelId + '_headers_tbl', HEADER_COLUMNS);
+            let bodyParams = collectTableRows('#' + panelId + '_body_tbl', BODY_COLUMNS);
+            let responseRules = collectTableRows('#' + panelId + '_rules_tbl', RULE_COLUMNS);
+
+            apis.push({
+                action: action,
+                url: url.trim(),
+                method: $('.' + panelId + '_method').val(),
+                extra_headers: extraHeaders.length > 0 ? extraHeaders : [],
+                body_params: bodyParams,
+                response_rules: responseRules,
+                timeout: parseInt($('.' + panelId + '_timeout').val()) || 10,
+                is_enabled: $('.' + panelId + '_enabled').is(':checked')
+            });
+        });
+        return { pushApis: apis };
+    }
+
+    /**
+     * 在详情弹窗中渲染推送配置（只读，T5.6 增强版）
+     *
+     * @param {Array} apis 推送接口配置数组
+     */
+    function renderDetailPushConfig(apis) {
+        let area = document.getElementById('detailPushConfigArea');
+        if (!area) return;
+        if (!apis || apis.length === 0) {
+            area.innerHTML = '<div class="text-muted fst-italic" style="font-size:0.85rem;">未配置推送接口</div>';
+            return;
+        }
+        let html = '';
+        // 展示 appid / appkey 状态
+        let firstApi = apis[0] || {};
+        html += '<div class="push-detail-config mb-2" style="background:#f0f7ff;">'
+            + '<div><span class="push-detail-label">AppID：</span><code>' + escapeAttr(firstApi.appid || '未设置') + '</code></div>'
+            + '<div><span class="push-detail-label">AppKey：</span>' + (firstApi.has_appkey ? '<span class="badge bg-success">已配置</span>' : '<span class="badge bg-secondary">未配置</span>') + '</div>'
+            + '</div>';
+
+        apis.forEach(function (api) {
+            let label = PUSH_ACTION_LABELS[api.action] || api.action;
+            let enabledBadge = api.is_enabled ? '<span class="badge bg-success">启用</span>' : '<span class="badge bg-secondary">禁用</span>';
+            html += '<div class="push-detail-config">'
+                + '<div><span class="push-detail-label">' + label + '</span> ' + enabledBadge + '</div>'
+                + '<div><span class="push-detail-label">地址：</span><code>' + escapeAttr(api.url) + '</code> <span class="badge bg-info">' + escapeAttr(api.method || 'POST') + '</span></div>'
+                + '<div><span class="push-detail-label">超时：</span>' + (api.timeout || 10) + ' 秒</div>';
+
+            // 自定义请求头
+            let headers = Array.isArray(api.extra_headers) ? api.extra_headers : [];
+            if (headers.length > 0) {
+                html += '<div><span class="push-detail-label">请求头：</span></div>'
+                    + '<table class="push-detail-sub-table"><thead><tr><th>名称</th><th>值</th></tr></thead><tbody>';
+                headers.forEach(function (h) {
+                    html += '<tr><td>' + escapeAttr(h.name || '') + '</td><td><code>' + escapeAttr(h.value || '') + '</code></td></tr>';
+                });
+                html += '</tbody></table>';
+            }
+
+            // 请求体参数
+            let bodyParams = Array.isArray(api.body_params) ? api.body_params : [];
+            if (bodyParams.length > 0) {
+                html += '<div><span class="push-detail-label">请求参数：</span></div>'
+                    + '<table class="push-detail-sub-table"><thead><tr><th>参数名</th><th>值</th><th>类型</th></tr></thead><tbody>';
+                bodyParams.forEach(function (p) {
+                    html += '<tr><td>' + escapeAttr(p.name || '') + '</td><td><code>' + escapeAttr(p.value || '') + '</code></td><td>' + escapeAttr(p.type || 'string') + '</td></tr>';
+                });
+                html += '</tbody></table>';
+            }
+
+            // 响应验证规则
+            let rules = Array.isArray(api.response_rules) ? api.response_rules : [];
+            if (rules.length > 0) {
+                html += '<div><span class="push-detail-label">验证规则：</span></div>'
+                    + '<table class="push-detail-sub-table"><thead><tr><th>字段</th><th>类型</th><th>期望值</th></tr></thead><tbody>';
+                rules.forEach(function (r) {
+                    html += '<tr><td>' + escapeAttr(r.field || '') + '</td><td>' + escapeAttr(r.type || 'string') + '</td><td><code>' + escapeAttr(r.value || '') + '</code></td></tr>';
+                });
+                html += '</tbody></table>';
+            }
+
+            html += '</div>';
+        });
+        area.innerHTML = html;
+    }
+
+    function init() {
+        var clipboard = new ClipboardJS('.copy-btn'); // 绑定所有 class 为 btn 的按钮
+        clipboard.on('success', function(e) {
+            messageEx('已复制到剪贴板', 'success', 500);
+            e.clearSelection();
+        });
+        clipboard.on('error', function(e) {
+            messageEx('复制失败:' + e.action, 'warning', 500);
+        });
+        for (const element of $('[data-bs-toggle="tooltip"]')) {
+            bootstrap.Tooltip.getOrCreateInstance(element);
+        }
+        checkToken();
+        activeNav('#nav-index');
+        $(function () {
+            // 缩略图弹出框
+            for (let i = 0; i < parseInt('{$apps|count}'); i++) {
+                let img_node = $('#show_app_img' + i);
+                img_node.popover({
+                    animation: true,
+                    html: true,
+                    container: 'body',
+                    content: "<img src='" + img_node.attr('src') + "' alt='" + img_node.attr('alt') + "' width='400px' />"
+                });
+            }
+
+            // 渲染表格中的授权模式标签
+            $('.grant-badges').each(function () {
+                renderGrantTypeBadges($(this), $(this).data('grants'));
+            });
+        });
+    }
+
+    init();
 </script>
 {/block}

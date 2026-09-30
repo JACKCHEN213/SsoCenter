@@ -12,7 +12,7 @@ return [
         'ico',
     ],
     'MAX_IMAGE_SIZE' => 10 * 1024 * 1024,
-    'JWT_KEY_PATH' => env('app_path') . '/common/keys/',
+    'JWT_KEY_PATH' => rtrim(app_path(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'common' . DIRECTORY_SEPARATOR . 'keys' . DIRECTORY_SEPARATOR,
     'PRIVATE_KEY_OPTIONS' => [
         "private_key_bits" => 2048,
         "private_key_type" => OPENSSL_KEYTYPE_RSA,
@@ -30,4 +30,5 @@ return [
         ],
     ],
     'APP_KEY_PATH' => 'static/app/keys/',
+    'USER_KEY_PATH' => 'public/static/app/user_keys/',
 ];

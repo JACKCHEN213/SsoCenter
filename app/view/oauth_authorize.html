@@ -1,0 +1,195 @@
+{extend name="template/login" /}
+{block name="title"}SSO 授权{/block}
+{block name="head"}
+<style>
+    .sso-authorize-card {
+        max-width: 440px;
+        margin: 60px auto 40px auto;
+        padding: 32px 36px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        background: #fff;
+    }
+    .sso-authorize-card .app-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .sso-authorize-card .app-info img {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f8f9fa;
+    }
+    .sso-authorize-card .app-info .app-meta {
+        flex: 1;
+        min-width: 0;
+    }
+    .sso-authorize-card .app-info .app-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 2px;
+        word-break: break-all;
+    }
+    .sso-authorize-card .app-info .app-redirect {
+        font-size: 12px;
+        color: #6c757d;
+        word-break: break-all;
+    }
+    .sso-authorize-card h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .sso-authorize-card .lead-text {
+        color: #495057;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    .sso-authorize-card .permission-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px 16px;
+    }
+    .sso-authorize-card .permission-list li {
+        padding: 4px 0;
+        font-size: 14px;
+        color: #495057;
+    }
+    .sso-authorize-card .permission-list li::before {
+        content: "✓";
+        color: #2e7d32;
+        margin-right: 8px;
+        font-weight: 700;
+    }
+    .sso-authorize-card .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    .sso-authorize-card .action-buttons button {
+        flex: 1;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .sso-error-card {
+        max-width: 440px;
+        margin: 80px auto;
+        padding: 32px;
+        border-radius: 12px;
+        background: #fff5f5;
+        border: 1px solid #fecaca;
+        text-align: center;
+    }
+    .sso-error-card h3 {
+        color: #b91c1c;
+        margin-bottom: 12px;
+    }
+    .sso-error-card p {
+        color: #7f1d1d;
+        margin-bottom: 0;
+    }
+    .sso-user-badge {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #1565c0;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+</style>
+{/block}
+
+{block name="appName"}app-login{/block}
+
+{block name="content"}
+{if !empty($error_title)}
+<div class="sso-error-card">
+    <h3>{$error_title}</h3>
+    <p>{$error_description}</p>
+</div>
+{elseif !empty($app_id)}
+<div class="sso-authorize-card">
+    <div class="app-info">
+        {if !empty($app_image)}
+        <img src="{$app_image}" alt="{$app_name}" />
+        {else}
+        <div style="width:48px;height:48px;border-radius:8px;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:24px;">🔐</div>
+        {/if}
+        <div class="app-meta">
+            <div class="app-name">{$app_name}</div>
+            <div class="app-redirect">{$callback}</div>
+        </div>
+    </div>
+
+    <!-- 状态 A：登录表单 -->
+    <div id="login-view" {if $is_logged_in}style="display:none;"{/if}>
+        <h4>{$app_name} 请求使用您的账户登录</h4>
+        <p class="lead-text">请使用 SSO Center 账号登录以继续</p>
+
+        {if !empty($logged_in_username)}
+        <div class="sso-user-badge">
+            <i class="bi bi-person-check"></i> 当前账号：{$logged_in_username}
+            <a href="javascript:void(0);" onclick="logoutAndRelogin()" style="margin-left:8px;color:#1565c0;">切换账号</a>
+        </div>
+        {/if}
+
+        <form class="auth-form login-form" onsubmit="ssoLogin(event)">
+            <div class="mb-3">
+                <label class="sr-only" for="username">用户名</label>
+                <input id="username" name="username" type="text" class="form-control" placeholder="请输入用户名" autocomplete="off" required="required">
+            </div>
+            <div class="mb-3">
+                <label class="sr-only" for="password">密码</label>
+                <input id="password" name="password" type="password" class="form-control" autocomplete="off" placeholder="请输入密码" required="required">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">登录</button>
+        </form>
+    </div>
+
+    <!-- 状态 B：授权确认 -->
+    <div id="confirm-view" {if !$is_logged_in}style="display:none;"{/if}>
+        <h4>{$app_name} 请求访问您的账户</h4>
+        <p class="lead-text">授权后该应用将获取以下权限：</p>
+        <ul class="permission-list">
+            <li>获取您的基本信息（用户名等）</li>
+        </ul>
+        <div class="action-buttons">
+            <button type="button" class="btn btn-outline-secondary" onclick="denyAuthorize()">拒绝</button>
+            <button type="button" class="btn btn-primary" onclick="confirmAuthorize()">允许</button>
+        </div>
+    </div>
+</div>
+{else}
+<div class="sso-error-card">
+    <h3>参数错误</h3>
+    <p>缺少必要参数，请检查第三方应用链接是否正确</p>
+</div>
+{/if}
+{/block}
+
+{block name="script"}
+{if !empty($app_id)}
+<script>
+    // T2.1/T2.4 注入 SSO 参数（新参数名，前端统一使用 APP_ID/callback/state）
+    window.__SSO_PARAMS__ = {
+        APP_ID: '{$app_id}',
+        callback: '{$callback}',
+        state: '{$state}',
+        app_name: '{$app_name}',
+        is_logged_in: {$is_logged_in ? 'true' : 'false'}
+    };
+</script>
+<script src="/assets/js/oauth-authorize.js"></script>
+{/if}
+{/block}

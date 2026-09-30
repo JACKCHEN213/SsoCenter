@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
@@ -8,41 +10,15 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+
+// Index 控制器路由
 use think\facade\Route;
-
-// Route::get('think', function () {
-//     return 'hello,ThinkPHP8!';
-// });
-
-// Route::get('hello/:name', 'index/hello');
-
-Route::group('app', function () {
-    Route::post('add', 'add');
-    Route::delete('delete', 'delete');
-    Route::put('update', 'update');
-    Route::post('upload_image', 'uploadImage');
-    Route::delete('delete_uploaded_image', 'deleteUploadedImage');
-    Route::get('download', 'download');
-})->prefix('application/');
+use app\controller\OperationLog;
+use app\http\middleware\CheckLogin;
 
 Route::group('/', function () {
     Route::get('/', 'index');
     Route::get('index', 'index');
-    Route::get('orders', function () {
-        return view('/orders');
-    });
-    Route::get('docs', function () {
-        return view('/docs');
-    });
-    Route::get('charts', function () {
-        return view('/charts');
-    });
-    Route::get('help', function () {
-        return view('/help');
-    });
-    Route::get('download', function () {
-        return view('/download');
-    });
     Route::get('about', function () {
         return view('/about');
     });
@@ -51,31 +27,17 @@ Route::group('/', function () {
     });
 })->prefix('index/');
 
-Route::group('login', function () {
-    Route::get('/', 'index');
-    Route::post('login', 'login');
-    Route::post('verify', 'verify');
-})->prefix('login/');
+// 操作日志路由
+Route::group('operation_log', function () {
+    Route::get('', [OperationLog::class, 'index']);
+    Route::post('list', [OperationLog::class, 'list']);
+    Route::post('detail', [OperationLog::class, 'detail']);
+});
 
-Route::group('reset_password', function () {
-    Route::get('/', 'index');
-})->prefix('reset_password/');
-
-Route::group('signup', function () {
-    Route::get('/', 'index');
-    Route::post('/signup', 'signup');
-})->prefix('signup/');
-
-Route::group('system_manage', function () {
-    Route::get('/settings', 'settings');
-    Route::get('/account', 'account');
-    Route::get('/notifications', 'notifications');
-})->prefix('system_manage/');
-
-Route::group('user', function () {
-    Route::get('/', 'index');
-    Route::post('/', 'add');
-    Route::patch('/', 'update');
-    Route::delete('/', 'delete');
-    Route::post('/batch', 'batchAdd');
-})->prefix('user/');
+// 会话管理路由
+Route::group('session', function () {
+    Route::get('', [app\controller\Session::class, 'index']);
+    Route::post('list', [app\controller\Session::class, 'list']);
+    Route::post('detail', [app\controller\Session::class, 'detail']);
+    Route::post('logout', [app\controller\Session::class, 'logout']);
+})->middleware(CheckLogin::class);

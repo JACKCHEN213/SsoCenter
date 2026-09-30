@@ -3,7 +3,7 @@
  * @param params
  */
 function confirmEx(params) {
-    const modalElemet = $(`
+    const $modalElemet = $(`
     <div class="modal fade" id="confirmEx" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="addAppLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -22,16 +22,23 @@ function confirmEx(params) {
             </div>
         </div>
     </div>`);
-    $('body').append(modalElemet);
-    modalElemet.modal('show');
+    $('body').append($modalElemet);
+    let confirmExConfirmObj = bootstrap.Modal.getOrCreateInstance($modalElemet.get(0));
+    $modalElemet.modal('show');
 
     $("#confirmExCancel").click(() => {
-        modalElemet.modal('hide').remove();
+        $modalElemet.modal('hide').remove();
         params.callback !== undefined && params.callback(false);
     });
     $("#confirmExConfirm").click(() => {
-        modalElemet.modal('hide').remove();
+        $modalElemet.modal('hide').remove();
         params.callback !== undefined && params.callback(true);
+    });
+    $modalElemet.on('shown.bs.modal', function () {
+        $(this).css('z-index', typeof params.z_index !== 'undefined' ? params.z_index : 10058);
+        setTimeout(() => {
+            $(confirmExConfirmObj._backdrop._element).css('z-index', typeof params.z_index !== 'undefined' ? params.z_index : 10057);
+        }, 0);
     });
 }
 
